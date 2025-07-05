@@ -28,6 +28,8 @@ import {
   ArrowRightLeft,
   FileSearch,
   Mail,
+  MapPin,
+  Pilcrow,
 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
@@ -48,6 +50,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Form,
@@ -59,13 +62,17 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { CopyableLine } from "@/components/copyable-line";
+import { CopyableParagraph } from "@/components/copyable-paragraph";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { cleanupLines, CleanupLinesInput } from "@/ai/flows/cleanupLinesFlow";
 import { extractData, ExtractDataInput } from "@/ai/flows/extractDataFlow";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ukLocations, usaLocations, canadaLocations } from "@/lib/locations";
 
 
 const formSchema = z.object({
@@ -85,7 +92,12 @@ type FindReplacePair = {
 }
 
 type CopyAction = "mark" | "remove";
-type ActiveTool = "copyable" | "find-replace" | "data-extractor" | null;
+type ActiveTool = "copyable" | "copyable-paragraphs" | "find-replace" | "data-extractor" | "query-generator" | null;
+
+type ExtractedDataItem = {
+    email: string;
+    count: number;
+};
 
 const toolHelpContent = {
   copyable: {
@@ -102,6 +114,23 @@ const toolHelpContent = {
       {
         question: "How do I use the 'Upload from File' feature? 📁",
         answer: "Click the 'Upload from File' button and select a .txt file from your computer. The content of the file will be loaded into the input area, ready to be converted."
+      }
+    ]
+  },
+  'copyable-paragraphs': {
+    description: "This tool is similar to Copyable Lines, but designed for paragraphs. 📋 Paste a block of text, and it will be split into individual paragraphs. Each paragraph can then be easily copied with a single click.",
+    faqs: [
+      {
+        question: "How does it split the text into paragraphs? 🤔",
+        answer: "The tool splits your text wherever it finds one or more blank lines between blocks of text. This is a common way to separate paragraphs in plain text documents."
+      },
+      {
+        question: "Can I edit a paragraph after it has been created? ✍️",
+        answer: "Yes! Just like with copyable lines, you can hover over any paragraph to reveal icons that allow you to edit the text or delete it entirely."
+      },
+      {
+        question: "What's the best use case for this tool? 💡",
+        answer: "It's perfect for when you're working with longer-form content like articles, emails, or reports and need to grab specific paragraphs quickly without losing their formatting."
       }
     ]
   },
@@ -123,8 +152,12 @@ const toolHelpContent = {
     ]
   },
   'data-extractor': {
-    description: "The Email Extractor is designed to quickly scan large amounts of text or multiple files to find and list all unique email addresses. 📧 It supports pasting text directly or uploading .txt, .csv, .xls, and .xlsx files.",
+    description: "The Email Extractor is designed to quickly scan large amounts of text or files to find all email addresses, count their occurrences, and list the unique ones. 📧 It supports pasting text directly or uploading .txt, .csv, .xls, and .xlsx files.",
     faqs: [
+      {
+        question: "How does the tool handle duplicate emails? 🔍",
+        answer: "The tool automatically groups all identical emails (case-insensitive) and shows you a count of how many times each unique email appeared in your input text. This helps you see which emails are most frequent."
+      },
       {
         question: "What file types are supported for upload? 📄",
         answer: "You can upload plain text (.txt), comma-separated values (.csv), and Excel files (.xls, .xlsx)."
@@ -136,6 +169,23 @@ const toolHelpContent = {
       {
         question: "Does it find emails inside Excel files? 🕵️",
         answer: "Yes. The tool reads text from all sheets within your uploaded Excel workbook to ensure no emails are missed."
+      }
+    ]
+  },
+  'query-generator': {
+    description: "Instantly generate a list of search queries for a specific service across all states, counties, or provinces of a selected country. 🗺️ Perfect for market research or lead generation campaigns.",
+    faqs: [
+      {
+        question: "How does it know all the locations? 🤔",
+        answer: "The tool uses a pre-compiled list of major administrative areas (like states in the USA or counties in the UK) for each supported country. It's fast and doesn't require an internet connection to generate the list."
+      },
+      {
+        question: "Can I add more countries or more specific locations? ✍️",
+        answer: "Currently, the tool supports the UK, USA, and Canada with their primary regions. Future updates may include more countries or more detailed city-level data."
+      },
+      {
+        question: "What's the best way to use the generated list? 📋",
+        answer: "You can copy the entire list with a single click and paste it into a search engine, a spreadsheet for tracking, or any other tool you use for research."
       }
     ]
   }
@@ -234,6 +284,12 @@ export default function Home() {
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const { toast } = useToast();
 
+  // State for Copyable Paragraphs tool
+  const [paragraphItems, setParagraphItems] = useState<LineItem[]>([]);
+  const [paragraphCopyAction, setParagraphCopyAction] = useState<CopyAction>("mark");
+  const [paragraphHasConverted, setParagraphHasConverted] = useState(false);
+  const paragraphFileInputRef = useRef<HTMLInputElement>(null);
+
   // State for Find & Replace tool
   const [findReplaceInput, setFindReplaceInput] = useState("");
   const [findReplaceOutput, setFindReplaceOutput] = useState("");
@@ -243,8 +299,13 @@ export default function Home() {
 
   // State for Email Extractor tool
   const [extractorInput, setExtractorInput] = useState("");
-  const [extractorOutput, setExtractorOutput] = useState("");
-  const [extractionCount, setExtractionCount] = useState<number | null>(null);
+  const [extractedData, setExtractedData] = useState<ExtractedDataItem[] | null>(null);
+
+  // State for Query Generator tool
+  const [queryService, setQueryService] = useState("");
+  const [queryCountry, setQueryCountry] = useState("");
+  const [queryOutput, setQueryOutput] = useState("");
+
 
   // State for Download Dialog
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
@@ -253,6 +314,13 @@ export default function Home() {
 
 
   const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      lines: "",
+    },
+  });
+
+  const paragraphForm = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       lines: "",
@@ -312,6 +380,15 @@ export default function Home() {
     setHasConverted(true);
   }
 
+  function onParagraphSubmit(values: z.infer<typeof formSchema>) {
+    const paragraphsArray = values.lines
+      .split(/\n\s*\n/)
+      .filter((p) => p.trim() !== "")
+      .map((p, index) => ({ id: `${Date.now()}-${index}`, text: p.trim(), copied: false }));
+    setParagraphItems(paragraphsArray);
+    setParagraphHasConverted(true);
+  }
+
   const handleLineCopied = (itemId: string) => {
     if (copyAction === "mark") {
       setLineItems((prevItems) =>
@@ -344,6 +421,51 @@ export default function Home() {
     form.reset();
     setHasConverted(false);
     localStorage.removeItem("niazi-tools-lines");
+  };
+
+  const handleParagraphCopied = (itemId: string) => {
+    if (paragraphCopyAction === "mark") {
+      setParagraphItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === itemId ? { ...item, copied: true } : item
+        )
+      );
+    } else {
+      setParagraphItems((prevItems) =>
+        prevItems.filter((item) => item.id !== itemId)
+      );
+    }
+  };
+  
+  const handleUpdateParagraph = (id: string, newText: string) => {
+    setParagraphItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id ? { ...item, text: newText, copied: false } : item
+      )
+    );
+  };
+  
+  const handleDeleteParagraph = (id: string) => {
+    setParagraphItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  };
+
+  const handleClearAllParagraphs = () => {
+    setParagraphItems([]);
+    paragraphForm.reset();
+    setParagraphHasConverted(false);
+  };
+
+  const handleParagraphFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === "text/plain") {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        paragraphForm.setValue("lines", text);
+      };
+      reader.readAsText(file);
+    }
+    event.target.value = "";
   };
 
   const handleBackToHome = () => {
@@ -550,6 +672,17 @@ export default function Home() {
 
   // --- Email Extractor Tool Functions ---
 
+    const extractorOutput = useMemo(() => {
+        if (!extractedData) return '';
+        return extractedData.map(item => item.email).join('\n');
+    }, [extractedData]);
+
+    const uniqueEmailCount = extractedData?.length ?? null;
+    const totalEmailCount = useMemo(() => {
+        if (!extractedData) return null;
+        return extractedData.reduce((sum, item) => sum + item.count, 0);
+    }, [extractedData]);
+
   const handleExtractorFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -630,32 +763,100 @@ export default function Home() {
   const handleExtractData = () => {
     if (!extractorInput) return;
 
-    setExtractorOutput("");
-    setExtractionCount(null);
-
-    // Simple email regex
     const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi;
-    const matches = extractorInput.match(emailRegex);
+    const allEmails = extractorInput.match(emailRegex) || [];
 
-    const uniqueEmails = matches ? [...new Set(matches)] : [];
-    
-    const formattedOutput = uniqueEmails.join('\n');
-    
-    setExtractorOutput(formattedOutput);
-    setExtractionCount(uniqueEmails.length);
-    
-    if (uniqueEmails.length === 0) {
-      toast({
-        title: "No Emails Found",
-        description: "Could not find any email addresses in the provided text.",
-      });
+    if (allEmails.length === 0) {
+        setExtractedData([]);
+        toast({
+            title: "No Emails Found",
+            description: "Could not find any email addresses in the provided text.",
+        });
+        return;
+    }
+
+    const emailCountsMap: { [email: string]: number } = {};
+    let duplicateCount = 0;
+
+    allEmails.forEach(email => {
+        const lowerCaseEmail = email.toLowerCase();
+        if (emailCountsMap[lowerCaseEmail]) {
+            emailCountsMap[lowerCaseEmail]++;
+            duplicateCount++;
+        } else {
+            emailCountsMap[lowerCaseEmail] = 1;
+        }
+    });
+
+    const sortedData = Object.entries(emailCountsMap)
+        .map(([email, count]) => ({ email, count }))
+        .sort((a, b) => a.email.localeCompare(b.email));
+
+    setExtractedData(sortedData);
+
+    const uniqueEmailsCount = sortedData.length;
+    if (uniqueEmailsCount > 0) {
+        let toastDescription = `Found ${uniqueEmailsCount} unique email(s).`;
+        if (duplicateCount > 0) {
+            toastDescription += ` ${duplicateCount} duplicate(s) were also found.`;
+        }
+        toast({
+            title: "Extraction Complete ✅",
+            description: toastDescription,
+        });
     }
   };
   
   const handleClearExtractor = () => {
     setExtractorInput("");
-    setExtractorOutput("");
-    setExtractionCount(null);
+    setExtractedData(null);
+  };
+  
+  // --- Query Generator Tool Functions ---
+  const handleGenerateQueries = () => {
+      if (!queryService.trim() || !queryCountry) {
+          toast({
+              title: "Missing Information",
+              description: "Please enter a service name and select a country.",
+              variant: "destructive",
+          });
+          return;
+      }
+
+      let locations: string[] = [];
+      let countryName = '';
+
+      switch (queryCountry) {
+          case "uk":
+              locations = ukLocations;
+              countryName = 'UK';
+              break;
+          case "usa":
+              locations = usaLocations;
+              countryName = 'USA';
+              break;
+          case "canada":
+              locations = canadaLocations;
+              countryName = 'Canada';
+              break;
+      }
+      
+      const generatedQueries = locations.map(
+          location => `${queryService.trim()} in ${location}, ${countryName}`
+      ).join('\n');
+      
+      setQueryOutput(generatedQueries);
+      
+      toast({
+        title: "Queries Generated! ✅",
+        description: `Generated ${locations.length} queries for ${countryName}.`,
+      });
+  };
+
+  const handleClearQueryGenerator = () => {
+      setQueryService("");
+      setQueryCountry("");
+      setQueryOutput("");
   };
 
 
@@ -754,6 +955,105 @@ Like this one."
             </form>
           </Form>
           {hasConverted && renderLineItems()}
+        </div>
+      );
+    }
+    if (activeTool === "copyable-paragraphs") {
+      return (
+          <div className="space-y-6">
+          <Form {...paragraphForm}>
+            <form
+              onSubmit={paragraphForm.handleSubmit(onParagraphSubmit)}
+              className="space-y-6"
+            >
+              <FormField
+                control={paragraphForm.control}
+                name="lines"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="sr-only">Your Text</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Paste your text with paragraphs here...
+
+Paragraphs separated by blank lines will be converted individually.
+
+Like this one."
+                        className="min-h-[150px] resize-y"
+                        {...field}
+                        disabled={paragraphHasConverted}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Settings className="h-4 w-4" />
+                  <Label>Copy Action</Label>
+                </div>
+                <RadioGroup
+                  value={paragraphCopyAction}
+                  onValueChange={(value: CopyAction) => setParagraphCopyAction(value)}
+                  className="flex flex-col sm:flex-row gap-4 sm:gap-8"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="mark" id="pr1" />
+                    <Label htmlFor="pr1" className="cursor-pointer">
+                      Mark as copied
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="remove" id="pr2" />
+                    <Label htmlFor="pr2" className="cursor-pointer">
+                      Remove when copied
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {!paragraphHasConverted ? (
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button type="button" variant="outline" className="w-full" onClick={() => handlePaste((text) => paragraphForm.setValue("lines", text))}>
+                      <ClipboardPaste className="mr-2 h-4 w-4" />
+                      Paste from Clipboard
+                    </Button>
+                    <div className="w-full">
+                      <Button type="button" variant="outline" className="w-full" onClick={() => paragraphFileInputRef.current?.click()}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload from File
+                      </Button>
+                      <input
+                        type="file"
+                        ref={paragraphFileInputRef}
+                        className="hidden"
+                        accept=".txt"
+                        onChange={handleParagraphFileUpload}
+                      />
+                      <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full">
+                    <Pilcrow className="mr-2 h-4 w-4" />
+                    Convert to Copyable Paragraphs
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleClearAllParagraphs}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Start Over
+                </Button>
+              )}
+            </form>
+          </Form>
+          {paragraphHasConverted && renderParagraphItems()}
         </div>
       );
     }
@@ -968,40 +1268,72 @@ Like this one."
 
                     {/* Output Column */}
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <Label htmlFor="extractor-output">Extracted Emails</Label>
-                            {extractionCount !== null && (
-                                <span className="text-sm font-normal text-muted-foreground">
-                                    ({extractionCount} email{extractionCount !== 1 ? 's' : ''} found)
-                                </span>
-                            )}
-                        </div>
-                        <Textarea
-                            id="extractor-output"
-                            readOnly
-                            className="min-h-[300px] resize-y bg-muted/50"
-                            value={extractorOutput}
-                        />
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                           <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => handleCopyOutput(extractorOutput)}
-                                disabled={!extractorOutput}
-                            >
-                                <Copy className="mr-2 h-4 w-4" />
-                                Copy Output
-                            </Button>
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <Label htmlFor="extractor-output">Unique Emails</Label>
+                                {uniqueEmailCount !== null && (
+                                    <span className="text-sm font-normal text-muted-foreground">
+                                        ({uniqueEmailCount} unique)
+                                    </span>
+                                )}
+                            </div>
+                            <Textarea
+                                id="extractor-output"
+                                readOnly
+                                className="min-h-[150px] resize-y bg-muted/50"
+                                value={extractorOutput}
+                                placeholder="Unique emails will appear here..."
+                            />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                             <Button
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => promptDownload(extractorOutput, 'niazi-tools-extracted-data.txt')}
-                                disabled={!extractorOutput}
-                            >
-                                <Download className="mr-2 h-4 w-4" />
-                                Download .txt
-                            </Button>
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => handleCopyOutput(extractorOutput)}
+                                    disabled={!extractorOutput}
+                                >
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Copy List
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => promptDownload(extractorOutput, 'niazi-tools-unique-emails.txt')}
+                                    disabled={!extractorOutput}
+                                >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download List
+                                </Button>
+                            </div>
                         </div>
+
+                        {extractedData && extractedData.length > 0 && (
+                            <div>
+                                <Separator className="my-4" />
+                                <div className="flex justify-between items-center mb-2">
+                                    <Label>Email Counts</Label>
+                                    {totalEmailCount !== null && (
+                                        <span className="text-sm font-normal text-muted-foreground">
+                                            ({totalEmailCount} total)
+                                        </span>
+                                    )}
+                                </div>
+                                <ScrollArea className="h-[150px] w-full rounded-md border p-3 bg-muted/50">
+                                    <div className="space-y-2">
+                                        {extractedData.map(({ email, count }) => (
+                                            <div key={email} className="flex justify-between items-center text-sm gap-4">
+                                                <span className="truncate pr-2">{email}</span>
+                                                <Badge variant="secondary" className="flex-shrink-0">{count}</Badge>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
+                            </div>
+                        )}
+                        {extractedData?.length === 0 && (
+                             <div className="text-center text-muted-foreground mt-4 p-8 border rounded-lg bg-muted/50">
+                                <p>No email addresses were found in the input text.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
                  <Button
@@ -1016,6 +1348,92 @@ Like this one."
             </div>
         )
     }
+    if (activeTool === "query-generator") {
+      return (
+          <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  {/* Input Column */}
+                  <div className="space-y-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="query-service">Service Name</Label>
+                          <Input
+                              id="query-service"
+                              placeholder="e.g., General Contractor, Plumber..."
+                              value={queryService}
+                              onChange={(e) => setQueryService(e.target.value)}
+                          />
+                      </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="query-country">Country</Label>
+                          <Select value={queryCountry} onValueChange={setQueryCountry}>
+                              <SelectTrigger id="query-country">
+                                  <SelectValue placeholder="Select a country" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="uk">United Kingdom</SelectItem>
+                                  <SelectItem value="usa">United States</SelectItem>
+                                  <SelectItem value="canada">Canada</SelectItem>
+                              </SelectContent>
+                          </Select>
+                      </div>
+                      <Button
+                          type="button"
+                          className="w-full"
+                          onClick={handleGenerateQueries}
+                          disabled={!queryService.trim() || !queryCountry}
+                      >
+                          <FileSearch className="mr-2 h-4 w-4" />
+                          Generate Queries
+                      </Button>
+                  </div>
+
+                  {/* Output Column */}
+                  <div className="space-y-4">
+                      <div className="space-y-2">
+                          <Label htmlFor="query-output">Generated Queries</Label>
+                          <Textarea
+                              id="query-output"
+                              readOnly
+                              className="min-h-[200px] resize-y bg-muted/50"
+                              value={queryOutput}
+                              placeholder="Generated queries will appear here..."
+                          />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <Button
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => handleCopyOutput(queryOutput)}
+                              disabled={!queryOutput}
+                          >
+                              <Copy className="mr-2 h-4 w-4" />
+                              Copy List
+                          </Button>
+                          <Button
+                              variant="outline"
+                              className="w-full"
+                              onClick={() => promptDownload(queryOutput, 'niazi-tools-queries.txt')}
+                              disabled={!queryOutput}
+                          >
+                              <Download className="mr-2 h-4 w-4" />
+                              Download List
+                          </Button>
+                      </div>
+                       <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
+                  </div>
+              </div>
+              <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleClearQueryGenerator}
+              >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Start Over
+              </Button>
+          </div>
+      )
+  }
     return null;
   };
 
@@ -1050,17 +1468,52 @@ Like this one."
     </div>
   );
 
+  const renderParagraphItems = () => (
+    <div className="mt-8">
+      <Separator className="my-6" />
+      {paragraphItems.length > 0 ? (
+        <>
+          <h3 className="text-lg font-semibold text-center mb-4 text-foreground/80">
+            Your Paragraphs ({paragraphItems.length})
+          </h3>
+          <div className="space-y-4">
+            {paragraphItems.map((item) => (
+              <CopyableParagraph
+                key={item.id}
+                id={item.id}
+                text={item.text}
+                isCopied={item.copied}
+                onCopy={() => handleParagraphCopied(item.id)}
+                onUpdate={handleUpdateParagraph}
+                onDelete={handleDeleteParagraph}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="text-center text-muted-foreground py-8">
+          <p>All items have been copied/removed.</p>
+          <p className="text-sm">You can start over with a new list.</p>
+        </div>
+      )}
+    </div>
+  );
+
   const getToolTitle = () => {
     if (activeTool === "copyable") return "Copyable Lines";
+    if (activeTool === "copyable-paragraphs") return "Copyable Paragraphs";
     if (activeTool === "find-replace") return "Find & Replace";
     if (activeTool === "data-extractor") return "Email Extractor";
+    if (activeTool === "query-generator") return "Query Generator";
     return "";
   };
 
   const getToolDescription = () => {
     if (activeTool === "copyable") return "Paste your text to convert it into individual lines, perfect for easy copying.";
+    if (activeTool === "copyable-paragraphs") return "Paste your text to convert it into individual paragraphs, perfect for easy copying.";
     if (activeTool === "find-replace") return "Perform powerful find and replace operations on your text with multiple rules at once.";
     if (activeTool === "data-extractor") return "Quickly extract all unique email addresses from large blocks of text or uploaded files.";
+    if (activeTool === "query-generator") return "Generate location-based search queries for marketing and research.";
     return "";
   };
 
@@ -1187,6 +1640,12 @@ Like this one."
                   onClick={() => setActiveTool("copyable")}
                 />
                 <ToolCard
+                  icon={<Pilcrow className="h-8 w-8 text-primary" />}
+                  title="Copyable Paragraphs"
+                  description="Convert text into individual, easy-to-copy paragraphs."
+                  onClick={() => setActiveTool("copyable-paragraphs")}
+                />
+                <ToolCard
                   icon={<Replace className="h-8 w-8 text-primary" />}
                   title="Find & Replace"
                   description="A powerful tool to find and replace text in bulk."
@@ -1197,6 +1656,12 @@ Like this one."
                   title="Email Extractor"
                   description="Extract all email addresses from text or files."
                   onClick={() => setActiveTool("data-extractor")}
+                />
+                <ToolCard
+                  icon={<MapPin className="h-8 w-8 text-primary" />}
+                  title="Query Generator"
+                  description="Generate location-based search queries."
+                  onClick={() => setActiveTool("query-generator")}
                 />
               </div>
 
@@ -1287,3 +1752,5 @@ Like this one."
       </main>
   );
 }
+
+    
