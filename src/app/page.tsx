@@ -30,6 +30,13 @@ import {
   Mail,
   MapPin,
   Pilcrow,
+  Clock,
+  Repeat,
+  MailPlus,
+  Check,
+  ArrowUp,
+  Pencil,
+  Save,
 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
@@ -73,6 +80,8 @@ import { cleanupLines, CleanupLinesInput } from "@/ai/flows/cleanupLinesFlow";
 import { extractData, ExtractDataInput } from "@/ai/flows/extractDataFlow";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ukLocations, usaLocations, canadaLocations } from "@/lib/locations";
+import { cn } from "@/lib/utils";
+import { Copyright } from "@/components/copyright";
 
 
 const formSchema = z.object({
@@ -85,6 +94,16 @@ type LineItem = {
   copied: boolean;
 };
 
+type CampaignLineItem = {
+  id: string;
+  email: string | null;
+  subject: string | null;
+  paragraph: string | null;
+  time: string | null;
+  copiedFields: Set<keyof Omit<CampaignLineItem, 'id' | 'copiedFields'>>;
+};
+
+
 type FindReplacePair = {
   id: number;
   find: string;
@@ -92,12 +111,19 @@ type FindReplacePair = {
 }
 
 type CopyAction = "mark" | "remove";
-type ActiveTool = "copyable" | "copyable-paragraphs" | "find-replace" | "data-extractor" | "query-generator" | null;
+type CampaignCopyAction = "mark" | "remove_field";
+type ActiveTool = "copyable" | "copyable-paragraphs" | "find-replace" | "data-extractor" | "query-generator" | "time-interval-generator" | "line-repeater" | "campaign-builder" | null;
 
 type ExtractedDataItem = {
     email: string;
     count: number;
 };
+
+type DynamicPair = {
+  id: number;
+  value: string;
+};
+
 
 const toolHelpContent = {
   copyable: {
@@ -118,20 +144,24 @@ const toolHelpContent = {
     ]
   },
   'copyable-paragraphs': {
-    description: "This tool is similar to Copyable Lines, but designed for paragraphs. 📋 Paste a block of text, and it will be split into individual paragraphs. Each paragraph can then be easily copied with a single click.",
+    description: "This tool is designed for paragraphs. 📋 Add up to 10 paragraphs manually or upload multiple .txt files. Each entry or file will be treated as a distinct paragraph, which can then be easily copied with a single click.",
     faqs: [
-      {
-        question: "How does it split the text into paragraphs? 🤔",
-        answer: "The tool splits your text wherever it finds one or more blank lines between blocks of text. This is a common way to separate paragraphs in plain text documents."
-      },
-      {
-        question: "Can I edit a paragraph after it has been created? ✍️",
-        answer: "Yes! Just like with copyable lines, you can hover over any paragraph to reveal icons that allow you to edit the text or delete it entirely."
-      },
-      {
-        question: "What's the best use case for this tool? 💡",
-        answer: "It's perfect for when you're working with longer-form content like articles, emails, or reports and need to grab specific paragraphs quickly without losing their formatting."
-      }
+        {
+            question: "How do I add paragraphs manually? 🤔",
+            answer: "You can add up to 10 individual paragraphs by clicking the 'Add Paragraph' button. Each text area is a separate paragraph."
+        },
+        {
+            question: "How does uploading files work? 📁",
+            answer: "You can select multiple .txt files at once. The entire content of each file will be treated as a single, separate paragraph, preserving all its original formatting, including line breaks."
+        },
+        {
+            question: "Can I edit a paragraph after it has been created? ✍️",
+            answer: "Yes! Once you've converted your inputs, you can hover over any paragraph in the output list to reveal icons that allow you to edit the text or delete it entirely."
+        },
+        {
+            question: "What's the best use case for this tool? 💡",
+            answer: "It's perfect for when you're working with longer-form content like articles, emails, or reports and need to grab specific paragraphs quickly without losing their formatting."
+        }
     ]
   },
   'find-replace': {
@@ -147,7 +177,7 @@ const toolHelpContent = {
       },
       {
         question: "Why is the 'Replace All' button disabled? 🚫",
-        answer: "The button is disabled if there's no text in the input box, or if none of the 'Find' fields in your rules have any text in them."
+        answer: "The button is disabled if there's no text in the input box, or if none of a 'Find' fields in your rules have any text in them."
       }
     ]
   },
@@ -168,7 +198,7 @@ const toolHelpContent = {
       },
       {
         question: "Does it find emails inside Excel files? 🕵️",
-        answer: "Yes. The tool reads text from all sheets within your uploaded Excel workbook to ensure no emails are missed."
+        answer: "Yes. The tool now intelligently looks for columns with headers like 'Email' or 'E-mail' and prioritizes them. If it doesn't find any specific email columns, it will scan all text in the file to ensure nothing is missed."
       }
     ]
   },
@@ -188,7 +218,62 @@ const toolHelpContent = {
         answer: "You can copy the entire list with a single click and paste it into a search engine, a spreadsheet for tracking, or any other tool you use for research."
       }
     ]
-  }
+  },
+  'time-interval-generator': {
+      description: "Create a list of time entries based on a starting time, a fixed interval, and the number of entries you need. ⏰ Ideal for creating schedules, timetables, or event timelines.",
+      faqs: [
+          {
+              question: "How do I set the start time? 🤔",
+              answer: "Simply use the time picker to select your desired start hour and minute. You can also type it in directly in a 24-hour format."
+          },
+          {
+              question: "What format is the interval in? ⏱️",
+              answer: "The interval is in minutes. For example, to generate a list with a 1.5-hour gap, you would enter '90' in the interval field."
+          },
+          {
+              question: "Is there a limit to how many entries I can generate? 📈",
+              answer: "For display in the browser, the limit is 2500 entries. However, if you enter a larger number, a special dialog will appear allowing you to download a file with as many entries as you need!"
+          }
+      ]
+  },
+    'line-repeater': {
+        description: "Quickly generate a large number of repeated lines from a single piece of text. 🔁 Perfect for creating test data, bulk lists, or any scenario where you need to duplicate a line many times.",
+        faqs: [
+            {
+                question: "Is there a limit to how many lines I can generate? 🤔",
+                answer: "For display in the browser, the tool is limited to 2500 lines. But if you need more, just enter a larger number! A special option will appear to let you download a file with as many lines as you want."
+            },
+            {
+                question: "What can I use this for? 💡",
+                answer: "It's great for creating sample data for software testing, populating spreadsheets with placeholder text, or any task where you need to multiply a single entry into a large list."
+            },
+            {
+                question: "Can I repeat more than one line of text at a time? ✍️",
+                answer: "This tool is designed to repeat a single line of text. If you need to repeat multiple lines, you can generate them one at a time and combine the output."
+            }
+        ]
+    },
+    'campaign-builder': {
+      description: "A powerful tool to assemble campaign data. 📧 Combine a list of emails with rotating subjects and paragraphs, paired with auto-generated time slots. The output provides separate copyable fields for easy use in your email client.",
+      faqs: [
+          {
+              question: "How many emails can I use? 🤔",
+              answer: "You can provide any number of emails. If you provide more than 100, a confirmation dialog will appear, and only the first 100 will be used for generation. Subjects, paragraphs, and times will be automatically matched to the number of emails you use."
+          },
+          {
+              question: "How do the subjects and paragraphs work? 📋",
+              answer: "You can add up to 10 different subjects and 10 different paragraphs. The tool will cycle through them to create a varied campaign. For example, if you have 2 subjects, it will assign them as A, B, A, B, etc."
+          },
+          {
+              question: "Why must the number of subjects and paragraphs be equal? ⚖️",
+              answer: "This is to ensure a predictable and balanced rotation. The first subject will always be paired with the first paragraph, the second with the second, and so on. This gives you precise control over your campaign message variations."
+          },
+          {
+            question: "How is the final output formatted? 📝",
+            answer: "The output is a list of numbered rows. Each row contains four separate, individually copyable fields: Email, Subject, Paragraph, and Time. This makes it incredibly easy to copy and paste each part directly into your email client."
+          }
+      ]
+    }
 };
 
 const ToolHelp = ({ tool, toolName }: { tool: ActiveTool; toolName: string }) => {
@@ -233,16 +318,21 @@ const ToolCard = ({
   title,
   description,
   onClick,
+  isNew = false,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   onClick: () => void;
+  isNew?: boolean;
 }) => (
   <Card
     onClick={onClick}
-    className="group cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-primary/20 hover:shadow-lg dark:bg-card/80"
+    className="group relative cursor-pointer transition-all duration-300 hover:border-primary hover:shadow-primary/20 hover:shadow-lg dark:bg-card/80"
   >
+    {isNew && (
+      <Badge className="absolute top-4 right-4">New</Badge>
+    )}
     <CardHeader className="flex-row items-center gap-4 space-y-0">
       <div className="rounded-lg bg-primary/10 p-3 border border-primary/20 group-hover:bg-primary/20 transition-colors">
         {icon}
@@ -278,17 +368,23 @@ export default function Home() {
   const [showNicknameDialog, setShowNicknameDialog] = useState(false);
   const [nicknameInput, setNicknameInput] = useState("");
   const [theme, setTheme] = useState("dark");
+  const [showScroll, setShowScroll] = useState(false);
   const copyableFileInputRef = useRef<HTMLInputElement>(null);
   const findReplaceFileInputRef = useRef<HTMLInputElement>(null);
   const extractorFileInputRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderEmailsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderSubjectsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderParagraphsRef = useRef<HTMLInputElement>(null);
+  const paragraphFileInputRef = useRef<HTMLInputElement>(null);
+
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const { toast } = useToast();
 
   // State for Copyable Paragraphs tool
   const [paragraphItems, setParagraphItems] = useState<LineItem[]>([]);
+  const [copyableParagraphs, setCopyableParagraphs] = useState<DynamicPair[]>([{ id: Date.now(), value: '' }]);
   const [paragraphCopyAction, setParagraphCopyAction] = useState<CopyAction>("mark");
   const [paragraphHasConverted, setParagraphHasConverted] = useState(false);
-  const paragraphFileInputRef = useRef<HTMLInputElement>(null);
 
   // State for Find & Replace tool
   const [findReplaceInput, setFindReplaceInput] = useState("");
@@ -306,11 +402,42 @@ export default function Home() {
   const [queryCountry, setQueryCountry] = useState("");
   const [queryOutput, setQueryOutput] = useState("");
 
+  // State for Time Interval Generator tool
+  const [startTime, setStartTime] = useState("09:00");
+  const [timeInterval, setTimeInterval] = useState(30);
+  const [timeCount, setTimeCount] = useState(10);
+  const [timeOutput, setTimeOutput] = useState("");
+
+  // State for Line Repeater tool
+  const [lineRepeaterInput, setLineRepeaterInput] = useState("");
+  const [lineRepeaterCount, setLineRepeaterCount] = useState(10);
+  const [lineRepeaterOutput, setLineRepeaterOutput] = useState("");
+
+  // State for Campaign Builder tool
+  const [campaignEmails, setCampaignEmails] = useState("");
+  const [campaignSubjects, setCampaignSubjects] = useState<DynamicPair[]>([{ id: Date.now(), value: '' }]);
+  const [campaignParagraphs, setCampaignParagraphs] = useState<DynamicPair[]>([{ id: Date.now(), value: '' }]);
+  const [campaignOutput, setCampaignOutput] = useState<CampaignLineItem[]>([]);
+  const [campaignHasGenerated, setCampaignHasGenerated] = useState(false);
+  const [campaignCopyAction, setCampaignCopyAction] = useState<CampaignCopyAction>("mark");
+  const [campaignStartTime, setCampaignStartTime] = useState("09:00");
+  const [campaignTimeInterval, setCampaignTimeInterval] = useState(5);
+  const [editingCampaignItemId, setEditingCampaignItemId] = useState<string | null>(null);
+  const [editingCampaignItemData, setEditingCampaignItemData] = useState<Partial<CampaignLineItem>>({});
+
 
   // State for Download Dialog
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
   const [downloadInfo, setDownloadInfo] = useState<{ text: string; filename: string } | null>(null);
   const [newFilename, setNewFilename] = useState("");
+  
+  // State for Large Generation Dialog
+  const [showLargeGenerationDialog, setShowLargeGenerationDialog] = useState(false);
+  const [largeGenerationInfo, setLargeGenerationInfo] = useState<{ onConfirm: () => void } | null>(null);
+  
+  // State for Email Limit Dialog
+  const [showEmailLimitDialog, setShowEmailLimitDialog] = useState(false);
+  const [emailLimitInfo, setEmailLimitInfo] = useState<{ count: number, onConfirm: () => void } | null>(null);
 
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -319,14 +446,24 @@ export default function Home() {
       lines: "",
     },
   });
-
-  const paragraphForm = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      lines: "",
-    },
-  });
   
+  const checkScrollTop = () => {
+    if (!showScroll && window.pageYOffset > 400) {
+        setShowScroll(true);
+    } else if (showScroll && window.pageYOffset <= 400) {
+        setShowScroll(false);
+    }
+  };
+
+  const scrollTop = () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  useEffect(() => {
+    window.addEventListener('scroll', checkScrollTop);
+    return () => window.removeEventListener('scroll', checkScrollTop);
+  }, [showScroll]);
+
   useEffect(() => {
     const savedTheme = localStorage.getItem('niazi-tools-theme') || 'dark';
     setTheme(savedTheme);
@@ -380,11 +517,21 @@ export default function Home() {
     setHasConverted(true);
   }
 
-  function onParagraphSubmit(values: z.infer<typeof formSchema>) {
-    const paragraphsArray = values.lines
-      .split(/\n\s*\n/)
-      .filter((p) => p.trim() !== "")
-      .map((p, index) => ({ id: `${Date.now()}-${index}`, text: p.trim(), copied: false }));
+  function onParagraphSubmit() {
+    const paragraphsArray = copyableParagraphs
+      .map(p => p.value.trim())
+      .filter(p => p)
+      .map((p, index) => ({ id: `${Date.now()}-${index}`, text: p, copied: false }));
+
+    if (paragraphsArray.length === 0) {
+        toast({
+            title: "No Paragraphs Provided",
+            description: "Please add at least one paragraph manually or via file upload.",
+            variant: "destructive",
+        });
+        return;
+    }
+
     setParagraphItems(paragraphsArray);
     setParagraphHasConverted(true);
   }
@@ -451,21 +598,60 @@ export default function Home() {
 
   const handleClearAllParagraphs = () => {
     setParagraphItems([]);
-    paragraphForm.reset();
+    setCopyableParagraphs([{ id: Date.now(), value: "" }]);
     setParagraphHasConverted(false);
   };
 
   const handleParagraphFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type === "text/plain") {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        paragraphForm.setValue("lines", text);
-      };
-      reader.readAsText(file);
-    }
-    event.target.value = "";
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileReadPromises = Array.from(files).map(file => {
+        return new Promise<string>((resolve, reject) => {
+            if (file.type === 'text/plain') {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target?.result as string);
+                reader.onerror = e => reject(e);
+                reader.readAsText(file);
+            } else {
+                resolve('');
+            }
+        });
+    });
+
+    Promise.all(fileReadPromises)
+        .then(contents => {
+            const validContents = contents.filter(Boolean);
+            if (validContents.length === 0) return;
+
+            const newPairs = validContents.map(content => ({
+                id: Date.now() + Math.random(),
+                value: content
+            }));
+            
+            setCopyableParagraphs(prev => {
+              const existingNonEmpty = prev.filter(p => p.value.trim());
+              const combined = [...existingNonEmpty, ...newPairs];
+              return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+
+            toast({
+                title: "Files Uploaded",
+                description: `${validContents.length} file(s) have been successfully loaded as paragraphs.`,
+            });
+        })
+        .catch(error => {
+            toast({
+                title: "Error Reading Files",
+                description: "There was an issue processing one or more of your files.",
+                variant: "destructive",
+            });
+        })
+        .finally(() => {
+            if (event.target) {
+                event.target.value = "";
+            }
+        });
   };
 
   const handleBackToHome = () => {
@@ -502,14 +688,8 @@ export default function Home() {
       setter(text);
       if (text) {
         toast({
-          title: "Success 🎉",
-          description: "Pasted from clipboard.",
-        });
-      } else {
-        toast({
-          title: "Clipboard Empty",
-          description: "There was no text on your clipboard to paste.",
-          variant: "destructive",
+          title: "Pasted from Clipboard",
+          description: "Text has been successfully pasted into the input field.",
         });
       }
     } catch (err) {
@@ -583,6 +763,12 @@ export default function Home() {
   
     setFindReplaceOutput(currentText);
     setReplacementsCount(totalReplacements);
+    if (totalReplacements > 0) {
+      toast({
+          title: "Replacement Complete",
+          description: `${totalReplacements} replacement(s) were made.`,
+      });
+    }
   };
 
 
@@ -590,7 +776,10 @@ export default function Home() {
     if (!text) return;
     try {
         await navigator.clipboard.writeText(text);
-        toast({ title: "Success 🎉", description: "Output copied to clipboard." });
+        toast({
+            title: "Copied to Clipboard",
+            description: "The output text has been copied.",
+        });
     } catch (err) {
         console.error("Failed to copy text: ", err);
         toast({
@@ -624,13 +813,12 @@ export default function Home() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    toast({
-      title: "Success 🎉",
-      description: `Output downloaded as ${finalFilename}.`,
-    });
-
     setShowDownloadDialog(false);
     setDownloadInfo(null);
+    toast({
+        title: "Download Successfully",
+        description: `Your file "${finalFilename}" has been saved.`,
+    });
   };
 
 
@@ -651,8 +839,8 @@ export default function Home() {
     }
   };
   
-  const handleMoveOutputToInput = () => {
-    if (!findReplaceOutput) {
+  const handleMoveOutputToInput = (targetSetter: (text: string) => void, textToMove: string, clearAfter = true) => {
+    if (!textToMove) {
       toast({
         title: "Output is Empty",
         description: "There is nothing to move to the input field.",
@@ -660,15 +848,29 @@ export default function Home() {
       });
       return;
     };
-    setFindReplaceInput(findReplaceOutput);
-    setFindReplaceOutput("");
-    setReplacementsCount(null);
-    setOutputHistory([]);
+    targetSetter(textToMove);
+  
+    if (clearAfter) {
+      if (targetSetter === setFindReplaceInput) {
+        setFindReplaceOutput("");
+        setReplacementsCount(null);
+        setOutputHistory([]);
+      } else if (targetSetter === setLineRepeaterInput) {
+        setLineRepeaterOutput("");
+      } else if (targetSetter === setQueryService) {
+        setQueryOutput("");
+      } else if (targetSetter === setExtractorInput) {
+        setExtractorInput("");
+        setExtractedData(null);
+      }
+    }
+  
     toast({
-      title: "Moved to Input ✅",
-      description: "The output has been moved to the input field for further editing.",
+      title: "Moved to Input",
+      description: "The output has been moved to the input area for further processing."
     });
   };
+  
 
   // --- Email Extractor Tool Functions ---
 
@@ -699,13 +901,35 @@ export default function Home() {
               resolve(result as string);
             } else if (fileType === 'xlsx' || fileType === 'xls') {
               const workbook = XLSX.read(result, { type: 'array' });
-              let fullText = '';
+              let excelText = '';
+              
               workbook.SheetNames.forEach(sheetName => {
                 const worksheet = workbook.Sheets[sheetName];
-                const text = XLSX.utils.sheet_to_csv(worksheet, { header: 1 });
-                fullText += text + '\n';
+                const json_data: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
+                
+                if (json_data.length === 0) return;
+
+                const headers = json_data[0].map(h => (typeof h === 'string' ? h.toLowerCase() : ''));
+                const emailColumnIndexes: number[] = [];
+                
+                headers.forEach((header: any, index: number) => {
+                  if (typeof header === 'string' && /\be-?mail\b/i.test(header)) {
+                    emailColumnIndexes.push(index);
+                  }
+                });
+
+                if (emailColumnIndexes.length > 0) {
+                  const emailData = json_data
+                    .slice(1)
+                    .map(row => emailColumnIndexes.map(index => row[index] || '').join(' '))
+                    .join('\n');
+                  excelText += emailData + '\n';
+                } else {
+                  const fullSheetText = XLSX.utils.sheet_to_csv(worksheet, { header: 1 });
+                  excelText += fullSheetText + '\n';
+                }
               });
-              resolve(fullText);
+              resolve(excelText);
             } else {
               resolve(''); 
             }
@@ -740,10 +964,18 @@ export default function Home() {
         const newContent = contents.join('\n');
         setExtractorInput(prevInput => prevInput ? `${prevInput}\n${newContent}` : newContent);
         
-        toast({
-          title: "Files Processed ✅",
-          description: `${supportedFileCount} of ${totalFileCount} files loaded. ${unsupportedCount > 0 ? `${unsupportedCount} unsupported files were ignored.` : ''}`,
-        });
+        if (unsupportedCount > 0) {
+          toast({
+            title: "Files Processed with Warnings",
+            description: `${supportedFileCount} of ${totalFileCount} files loaded. ${unsupportedCount} unsupported files were ignored.`,
+            variant: "destructive"
+          });
+        } else if (supportedFileCount > 0) {
+          toast({
+            title: "Files Uploaded",
+            description: `${supportedFileCount} file(s) have been successfully loaded.`,
+          });
+        }
       })
       .catch(error => {
         console.error("Error processing files:", error);
@@ -763,7 +995,7 @@ export default function Home() {
   const handleExtractData = () => {
     if (!extractorInput) return;
 
-    const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi;
+    const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
     const allEmails = extractorInput.match(emailRegex) || [];
 
     if (allEmails.length === 0) {
@@ -771,21 +1003,16 @@ export default function Home() {
         toast({
             title: "No Emails Found",
             description: "Could not find any email addresses in the provided text.",
+            variant: "destructive"
         });
         return;
     }
 
     const emailCountsMap: { [email: string]: number } = {};
-    let duplicateCount = 0;
 
     allEmails.forEach(email => {
         const lowerCaseEmail = email.toLowerCase();
-        if (emailCountsMap[lowerCaseEmail]) {
-            emailCountsMap[lowerCaseEmail]++;
-            duplicateCount++;
-        } else {
-            emailCountsMap[lowerCaseEmail] = 1;
-        }
+        emailCountsMap[lowerCaseEmail] = (emailCountsMap[lowerCaseEmail] || 0) + 1;
     });
 
     const sortedData = Object.entries(emailCountsMap)
@@ -793,18 +1020,10 @@ export default function Home() {
         .sort((a, b) => a.email.localeCompare(b.email));
 
     setExtractedData(sortedData);
-
-    const uniqueEmailsCount = sortedData.length;
-    if (uniqueEmailsCount > 0) {
-        let toastDescription = `Found ${uniqueEmailsCount} unique email(s).`;
-        if (duplicateCount > 0) {
-            toastDescription += ` ${duplicateCount} duplicate(s) were also found.`;
-        }
-        toast({
-            title: "Extraction Complete ✅",
-            description: toastDescription,
-        });
-    }
+    toast({
+        title: "Extraction Complete",
+        description: `Found ${sortedData.length} unique email(s).`,
+    });
   };
   
   const handleClearExtractor = () => {
@@ -846,11 +1065,10 @@ export default function Home() {
       ).join('\n');
       
       setQueryOutput(generatedQueries);
-      
       toast({
-        title: "Queries Generated! ✅",
-        description: `Generated ${locations.length} queries for ${countryName}.`,
-      });
+        title: "Queries Generated",
+        description: `Successfully generated ${locations.length} search queries.`,
+    });
   };
 
   const handleClearQueryGenerator = () => {
@@ -858,6 +1076,293 @@ export default function Home() {
       setQueryCountry("");
       setQueryOutput("");
   };
+
+  const generateTimeList = (count: number, start: string, interval: number) => {
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(startHour, startMinute, 0, 0);
+
+    const results = [];
+    for (let i = 0; i < count; i++) {
+        const currentTime = new Date(startDate.getTime() + i * interval * 60000);
+        let hours = currentTime.getHours();
+        const minutes = currentTime.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const minutesStr = String(minutes).padStart(2, '0');
+        results.push(`${String(hours).padStart(2, '0')}:${minutesStr}${ampm}`);
+    }
+    return results;
+  };
+
+
+  // --- Time Interval Generator ---
+  const handleGenerateTimes = () => {
+      if (timeCount > 2500) {
+        setLargeGenerationInfo({
+          onConfirm: () => {
+            const fullList = generateTimeList(timeCount, startTime, timeInterval).join('\n');
+            promptDownload(fullList, 'niazi-tools-large-time-list.txt');
+            setShowLargeGenerationDialog(false);
+          },
+        });
+        setShowLargeGenerationDialog(true);
+        return;
+      }
+
+      const results = generateTimeList(timeCount, startTime, timeInterval).join('\n');
+      setTimeOutput(results);
+      toast({
+        title: "Times Generated",
+        description: `Successfully generated ${timeCount} time entries.`,
+    });
+  };
+
+  const handleClearTimeGenerator = () => {
+      setTimeOutput('');
+      setStartTime("09:00");
+      setTimeInterval(30);
+      setTimeCount(10);
+  };
+
+
+  const generateRepeatedLineList = (count: number) => {
+    return Array(count).fill(lineRepeaterInput.trim()).join('\n');
+  };
+
+  // --- Line Repeater Tool ---
+  const handleGenerateRepeatedLines = () => {
+      if (!lineRepeaterInput.trim()) {
+          toast({
+              title: "Input Missing",
+              description: "Please enter the line you want to repeat.",
+              variant: "destructive",
+          });
+          return;
+      }
+
+      if (lineRepeaterCount > 2500) {
+        setLargeGenerationInfo({
+          onConfirm: () => {
+            const fullList = generateRepeatedLineList(lineRepeaterCount);
+            promptDownload(fullList, 'niazi-tools-large-repeated-list.txt');
+            setShowLargeGenerationDialog(false);
+          },
+        });
+        setShowLargeGenerationDialog(true);
+        return;
+      }
+
+      const lines = generateRepeatedLineList(lineRepeaterCount);
+      setLineRepeaterOutput(lines);
+      toast({
+        title: "Lines Repeated",
+        description: `Successfully generated ${lineRepeaterCount} lines.`,
+      });
+  };
+
+  const handleClearLineRepeater = () => {
+      setLineRepeaterInput("");
+      setLineRepeaterOutput("");
+      setLineRepeaterCount(10);
+  };
+
+  // --- Campaign Builder ---
+  const handleAddDynamicPair = (setter: React.Dispatch<React.SetStateAction<DynamicPair[]>>, pairs: DynamicPair[]) => {
+    if (pairs.length < 10) {
+      setter([...pairs, { id: Date.now(), value: "" }]);
+    }
+  };
+
+  const handleRemoveDynamicPair = (id: number, setter: React.Dispatch<React.SetStateAction<DynamicPair[]>>) => {
+    setter(pairs => pairs.filter((p) => p.id !== id));
+  };
+
+  const handleDynamicPairChange = (id: number, value: string, setter: React.Dispatch<React.SetStateAction<DynamicPair[]>>) => {
+    setter(pairs => pairs.map((p) => (p.id === id ? { ...p, value } : p)));
+  };
+
+  const handleCampaignFileUpload = (event: React.ChangeEvent<HTMLInputElement>, field: 'emails' | 'subjects' | 'paragraphs') => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+  
+    const fileReadPromises = Array.from(files).map(file => {
+      return new Promise<string>((resolve, reject) => {
+        if (file.type === 'text/plain') {
+          const reader = new FileReader();
+          reader.onload = e => resolve(e.target?.result as string);
+          reader.onerror = e => reject(e);
+          reader.readAsText(file);
+        } else {
+          resolve(''); // Skip non-txt files
+        }
+      });
+    });
+  
+    Promise.all(fileReadPromises).then(contents => {
+      const validContents = contents.filter(Boolean);
+      if (field === 'emails') {
+        const newEmails = validContents.join('\n');
+        setCampaignEmails(prev => prev ? `${prev}\n${newEmails}` : newEmails);
+      } else {
+        const currentSetter = field === 'subjects' ? setCampaignSubjects : setCampaignParagraphs;
+        
+        const newPairs = validContents.map(content => ({
+          id: Date.now() + Math.random(),
+          value: content
+        }));
+
+        currentSetter(prevPairs => {
+            const existingNonEmpty = prevPairs.filter(p => p.value.trim());
+            const combined = [...existingNonEmpty, ...newPairs];
+            return combined.length > 0 ? combined.slice(0, 10) : [{id: Date.now(), value: ''}];
+        });
+      }
+    });
+  
+    event.target.value = ''; // Reset file input
+  };
+  
+  const proceedToGenerateCampaign = () => {
+    const emails = campaignEmails.split('\n').map(e => e.trim()).filter(Boolean).slice(0, 100);
+    const subjects = campaignSubjects.map(s => s.value.trim()).filter(Boolean);
+    const paragraphs = campaignParagraphs.map(p => p.value.trim()).filter(Boolean);
+
+    if (emails.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one email address.", variant: "destructive" });
+        return;
+    }
+    if (subjects.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one subject.", variant: "destructive" });
+        return;
+    }
+    if (paragraphs.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one paragraph.", variant: "destructive" });
+        return;
+    }
+    if (subjects.length !== paragraphs.length) {
+        toast({ title: "Validation Error", description: "The number of subjects must be equal to the number of paragraphs.", variant: "destructive" });
+        return;
+    }
+
+    const times = generateTimeList(emails.length, campaignStartTime, campaignTimeInterval);
+    const generatedOutput: CampaignLineItem[] = [];
+
+    for (let i = 0; i < emails.length; i++) {
+        generatedOutput.push({
+            id: `${Date.now()}-${i}`,
+            email: emails[i],
+            subject: subjects[i % subjects.length],
+            paragraph: paragraphs[i % paragraphs.length],
+            time: times[i],
+            copiedFields: new Set(),
+        });
+    }
+    
+    setCampaignOutput(generatedOutput);
+    setCampaignHasGenerated(true);
+    toast({
+        title: "Campaign Generated",
+        description: `Successfully generated ${generatedOutput.length} campaign lines.`,
+    });
+  }
+
+  const handleGenerateCampaign = () => {
+    const emailList = campaignEmails.split('\n').map(e => e.trim()).filter(Boolean);
+    if (emailList.length > 100) {
+      setEmailLimitInfo({
+        count: emailList.length,
+        onConfirm: () => {
+          setShowEmailLimitDialog(false);
+          proceedToGenerateCampaign();
+        }
+      });
+      setShowEmailLimitDialog(true);
+    } else {
+      proceedToGenerateCampaign();
+    }
+  };
+  
+  const handleClearCampaignBuilder = () => {
+    setCampaignEmails("");
+    setCampaignSubjects([{ id: Date.now(), value: "" }]);
+    setCampaignParagraphs([{ id: Date.now(), value: "" }]);
+    setCampaignOutput([]);
+    setCampaignHasGenerated(false);
+    setCampaignStartTime("09:00");
+    setCampaignTimeInterval(5);
+  };
+  
+  const handleCampaignFieldCopied = (id: string, field: keyof Omit<CampaignLineItem, 'id' | 'copiedFields'>) => {
+    if (campaignCopyAction === 'mark') {
+        setCampaignOutput(prev => prev.map(item => {
+            if (item.id === id) {
+                const newCopiedFields = new Set(item.copiedFields);
+                newCopiedFields.add(field);
+                return { ...item, copiedFields: newCopiedFields };
+            }
+            return item;
+        }));
+        return;
+    }
+
+    if (campaignCopyAction === 'remove_field') {
+        setCampaignOutput(prev => {
+            const nextState = prev.map(item => {
+                if (item.id === id) {
+                    const newItem = { ...item, [field]: null };
+                    
+                    const remainingFields = (Object.keys(newItem) as Array<keyof CampaignLineItem>)
+                        .filter(key => key !== 'id' && key !== 'copiedFields' && newItem[key] !== null);
+                    
+                    if (remainingFields.length === 0) {
+                        return null; 
+                    }
+                    return newItem;
+                }
+                return item;
+            }).filter(Boolean) as CampaignLineItem[];
+
+            return nextState;
+        });
+    }
+};
+
+
+  const handleStartEditCampaignItem = (item: CampaignLineItem) => {
+    setEditingCampaignItemId(item.id);
+    setEditingCampaignItemData({
+      email: item.email || '',
+      subject: item.subject || '',
+      paragraph: item.paragraph || '',
+      time: item.time || '',
+    });
+  };
+  
+  const handleSaveCampaignItemEdit = (id: string) => {
+    setCampaignOutput(prev => prev.map(item =>
+        item.id === id ? { ...item, ...editingCampaignItemData, copiedFields: new Set() } as CampaignLineItem : item
+    ));
+    setEditingCampaignItemId(null);
+  };
+  
+  const handleCancelCampaignItemEdit = () => {
+    setEditingCampaignItemId(null);
+  };
+
+  const clearActiveTool = () => {
+    switch(activeTool) {
+      case 'copyable': handleClearAll(); break;
+      case 'copyable-paragraphs': handleClearAllParagraphs(); break;
+      case 'find-replace': handleClearFindReplace(); break;
+      case 'data-extractor': handleClearExtractor(); break;
+      case 'query-generator': handleClearQueryGenerator(); break;
+      case 'time-interval-generator': handleClearTimeGenerator(); break;
+      case 'line-repeater': handleClearLineRepeater(); break;
+      case 'campaign-builder': handleClearCampaignBuilder(); break;
+    }
+  }
 
 
   const renderToolContent = () => {
@@ -941,17 +1446,7 @@ Like this one."
                     Convert to Copyable Lines
                   </Button>
                 </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleClearAll}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Start Over
-                </Button>
-              )}
+              ) : null}
             </form>
           </Form>
           {hasConverted && renderLineItems()}
@@ -960,100 +1455,83 @@ Like this one."
     }
     if (activeTool === "copyable-paragraphs") {
       return (
-          <div className="space-y-6">
-          <Form {...paragraphForm}>
-            <form
-              onSubmit={paragraphForm.handleSubmit(onParagraphSubmit)}
-              className="space-y-6"
-            >
-              <FormField
-                control={paragraphForm.control}
-                name="lines"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="sr-only">Your Text</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Paste your text with paragraphs here...
+        <div className="space-y-6">
+            {!paragraphHasConverted ? (
+              <div className="space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Paragraphs</CardTitle>
+                        <CardDescription>Add up to 10 paragraphs manually. Each one will be a separate copyable item.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div className="max-h-[400px] w-full space-y-3 overflow-y-auto pr-2">
+                            {copyableParagraphs.map((pair, index) => (
+                                <div key={pair.id} className="flex items-start gap-2">
+                                    <Textarea
+                                        id={`paragraph-${pair.id}`}
+                                        placeholder={`Paragraph ${index + 1}`}
+                                        value={pair.value}
+                                        onChange={(e) => handleDynamicPairChange(pair.id, e.target.value, setCopyableParagraphs)}
+                                        className="min-h-[80px]"
+                                    />
+                                    {copyableParagraphs.length > 1 && (
+                                        <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveDynamicPair(pair.id, setCopyableParagraphs)}>
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        {copyableParagraphs.length < 10 && (
+                            <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCopyableParagraphs, copyableParagraphs)}>
+                                <PlusCircle className="mr-2 h-4 w-4"/> Add Paragraph
+                            </Button>
+                        )}
+                        <Separator />
+                        <div className="w-full">
+                            <Button type="button" variant="outline" className="w-full" onClick={() => paragraphFileInputRef.current?.click()}>
+                                <Upload className="mr-2 h-4 w-4" /> Upload From Files
+                            </Button>
+                            <input type="file" ref={paragraphFileInputRef} className="hidden" accept=".txt" onChange={handleParagraphFileUpload} multiple />
+                            <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported. Each file is treated as one paragraph.</p>
+                        </div>
+                    </CardContent>
+                </Card>
 
-Paragraphs separated by blank lines will be converted individually.
-
-Like this one."
-                        className="min-h-[150px] resize-y"
-                        {...field}
-                        disabled={paragraphHasConverted}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Settings className="h-4 w-4" />
-                  <Label>Copy Action</Label>
-                </div>
-                <RadioGroup
-                  value={paragraphCopyAction}
-                  onValueChange={(value: CopyAction) => setParagraphCopyAction(value)}
-                  className="flex flex-col sm:flex-row gap-4 sm:gap-8"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="mark" id="pr1" />
-                    <Label htmlFor="pr1" className="cursor-pointer">
-                      Mark as copied
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="remove" id="pr2" />
-                    <Label htmlFor="pr2" className="cursor-pointer">
-                      Remove when copied
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {!paragraphHasConverted ? (
-                <div className="flex flex-col gap-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <Button type="button" variant="outline" className="w-full" onClick={() => handlePaste((text) => paragraphForm.setValue("lines", text))}>
-                      <ClipboardPaste className="mr-2 h-4 w-4" />
-                      Paste from Clipboard
-                    </Button>
-                    <div className="w-full">
-                      <Button type="button" variant="outline" className="w-full" onClick={() => paragraphFileInputRef.current?.click()}>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload from File
-                      </Button>
-                      <input
-                        type="file"
-                        ref={paragraphFileInputRef}
-                        className="hidden"
-                        accept=".txt"
-                        onChange={handleParagraphFileUpload}
-                      />
-                      <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full">
-                    <Pilcrow className="mr-2 h-4 w-4" />
+                <Button onClick={onParagraphSubmit} size="lg">
+                    <Pilcrow className="mr-2 h-5 w-5" />
                     Convert to Copyable Paragraphs
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleClearAllParagraphs}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Start Over
                 </Button>
-              )}
-            </form>
-          </Form>
-          {paragraphHasConverted && renderParagraphItems()}
+              </div>
+            ) : (
+                <div className="space-y-6">
+                     <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Settings className="h-4 w-4" />
+                        <Label>Copy Action</Label>
+                        </div>
+                        <RadioGroup
+                        value={paragraphCopyAction}
+                        onValueChange={(value: CopyAction) => setParagraphCopyAction(value)}
+                        className="flex flex-col sm:flex-row gap-4 sm:gap-8"
+                        >
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="mark" id="pr1" />
+                            <Label htmlFor="pr1" className="cursor-pointer">
+                            Mark as copied
+                            </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="remove" id="pr2" />
+                            <Label htmlFor="pr2" className="cursor-pointer">
+                            Remove when copied
+                            </Label>
+                        </div>
+                        </RadioGroup>
+                    </div>
+                    {renderParagraphItems()}
+                </div>
+            )}
         </div>
       );
     }
@@ -1079,24 +1557,26 @@ Like this one."
                   <ClipboardPaste className="mr-2 h-4 w-4" />
                   Paste
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => findReplaceFileInputRef.current?.click()}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload File
-                </Button>
+                <div className="w-full">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => findReplaceFileInputRef.current?.click()}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload File
+                  </Button>
+                   <input
+                    type="file"
+                    ref={findReplaceFileInputRef}
+                    className="hidden"
+                    accept=".txt"
+                    onChange={handleFindReplaceFileUpload}
+                  />
+                  <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
+                </div>
               </div>
-              <input
-                type="file"
-                ref={findReplaceFileInputRef}
-                className="hidden"
-                accept=".txt"
-                onChange={handleFindReplaceFileUpload}
-              />
-              <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
             </div>
 
              <div className="flex flex-col items-center justify-start gap-4 self-stretch pt-8">
@@ -1149,7 +1629,7 @@ Like this one."
                   Replace All
                 </Button>
               </div>
-              <Button variant="ghost" size="icon" onClick={handleMoveOutputToInput} aria-label="Move Output to Input">
+              <Button variant="ghost" size="icon" onClick={() => handleMoveOutputToInput(setFindReplaceInput, findReplaceOutput)} aria-label="Move Output to Input">
                  <ArrowRightLeft className="h-5 w-5 text-muted-foreground" />
               </Button>
              </div>
@@ -1188,29 +1668,21 @@ Like this one."
                   <Copy className="mr-2 h-4 w-4" />
                   Copy
                 </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => promptDownload(findReplaceOutput, 'niazi-tools-replace-output.txt')}
-                  disabled={!findReplaceOutput}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
-                </Button>
+                <div className="w-full">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => promptDownload(findReplaceOutput, 'niazi-tools-replace-output.txt')}
+                    disabled={!findReplaceOutput}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download
+                  </Button>
+                  <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
+                </div>
               </div>
-              <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
             </div>
           </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleClearFindReplace}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Start Over
-          </Button>
         </div>
       );
     }
@@ -1233,25 +1705,27 @@ Like this one."
                                 <ClipboardPaste className="mr-2 h-4 w-4" />
                                 Paste
                             </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => extractorFileInputRef.current?.click()}
-                            >
-                                <Upload className="mr-2 h-4 w-4" />
-                                Upload File
-                            </Button>
+                             <div className="w-full">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => extractorFileInputRef.current?.click()}
+                                >
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    Upload File
+                                </Button>
+                                <input
+                                    type="file"
+                                    ref={extractorFileInputRef}
+                                    className="hidden"
+                                    accept=".txt,.csv,.xlsx,.xls"
+                                    onChange={handleExtractorFileUpload}
+                                    multiple
+                                />
+                                <p className="mt-1 text-center text-xs text-destructive">Supports .txt, .csv, .xls, and .xlsx files.</p>
+                            </div>
                         </div>
-                        <input
-                            type="file"
-                            ref={extractorFileInputRef}
-                            className="hidden"
-                            accept=".txt,.csv,.xlsx,.xls"
-                            onChange={handleExtractorFileUpload}
-                            multiple
-                        />
-                        <p className="mt-1 text-center text-xs text-destructive">Supports .txt, .csv, .xls, and .xlsx files.</p>
                         
                         <Separator />
 
@@ -1285,7 +1759,7 @@ Like this one."
                                 placeholder="Unique emails will appear here..."
                             />
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                            <Button
+                                <Button
                                     variant="outline"
                                     className="w-full"
                                     onClick={() => handleCopyOutput(extractorOutput)}
@@ -1294,15 +1768,18 @@ Like this one."
                                     <Copy className="mr-2 h-4 w-4" />
                                     Copy List
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() => promptDownload(extractorOutput, 'niazi-tools-unique-emails.txt')}
-                                    disabled={!extractorOutput}
-                                >
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Download List
-                                </Button>
+                                <div className="w-full">
+                                    <Button
+                                        variant="outline"
+                                        className="w-full"
+                                        onClick={() => promptDownload(extractorOutput, 'niazi-tools-unique-emails.txt')}
+                                        disabled={!extractorOutput}
+                                    >
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download List
+                                    </Button>
+                                    <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
+                                </div>
                             </div>
                         </div>
 
@@ -1336,15 +1813,6 @@ Like this one."
                         )}
                     </div>
                 </div>
-                 <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleClearExtractor}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Start Over
-                  </Button>
             </div>
         )
     }
@@ -1409,31 +1877,373 @@ Like this one."
                               <Copy className="mr-2 h-4 w-4" />
                               Copy List
                           </Button>
+                          <div className="w-full">
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => promptDownload(queryOutput, 'niazi-tools-queries.txt')}
+                                disabled={!queryOutput}
+                            >
+                                <Download className="mr-2 h-4 w-4" />
+                                Download List
+                            </Button>
+                            <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      )
+  }
+  if (activeTool === "time-interval-generator") {
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                {/* Input Column */}
+                <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="start-time">Start Time</Label>
+                            <Input
+                                id="start-time"
+                                type="time"
+                                value={startTime}
+                                onChange={(e) => setStartTime(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="interval">Interval (mins)</Label>
+                            <Input
+                                id="interval"
+                                type="number"
+                                value={timeInterval}
+                                onChange={(e) => setTimeInterval(Math.max(1, parseInt(e.target.value) || 1))}
+                                min="1"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="count">Count</Label>
+                            <Input
+                                id="count"
+                                type="number"
+                                value={timeCount}
+                                onChange={(e) => setTimeCount(Math.max(1, parseInt(e.target.value) || 1))}
+                                min="1"
+                            />
+                        </div>
+                    </div>
+                    <Button
+                        type="button"
+                        className="w-full"
+                        onClick={handleGenerateTimes}
+                        disabled={!startTime}
+                    >
+                        <Clock className="mr-2 h-4 w-4" />
+                        Generate Times
+                    </Button>
+                </div>
+
+                {/* Output Column */}
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="time-output">Generated Times</Label>
+                        <Textarea
+                            id="time-output"
+                            readOnly
+                            className="min-h-[200px] resize-y bg-muted/50"
+                            value={timeOutput}
+                            placeholder="Generated time list will appear here..."
+                        />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => handleCopyOutput(timeOutput)}
+                            disabled={!timeOutput}
+                        >
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copy List
+                        </Button>
+                        <div className="w-full">
                           <Button
                               variant="outline"
                               className="w-full"
-                              onClick={() => promptDownload(queryOutput, 'niazi-tools-queries.txt')}
-                              disabled={!queryOutput}
+                              onClick={() => promptDownload(timeOutput, 'niazi-tools-times.txt')}
+                              disabled={!timeOutput}
                           >
                               <Download className="mr-2 h-4 w-4" />
                               Download List
                           </Button>
-                      </div>
-                       <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
-                  </div>
-              </div>
-              <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleClearQueryGenerator}
-              >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Start Over
-              </Button>
-          </div>
-      )
+                           <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
   }
+  if (activeTool === "line-repeater") {
+        return (
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    {/* Input Column */}
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="repeater-input">Line to Repeat</Label>
+                            <Input
+                                id="repeater-input"
+                                placeholder="Enter the text to repeat..."
+                                value={lineRepeaterInput}
+                                onChange={(e) => setLineRepeaterInput(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="repeater-count">Number of Times</Label>
+                            <Input
+                                id="repeater-count"
+                                type="number"
+                                value={lineRepeaterCount}
+                                onChange={(e) => setLineRepeaterCount(Math.max(1, parseInt(e.target.value) || 1))}
+                                min="1"
+                            />
+                        </div>
+                        <Button
+                            type="button"
+                            className="w-full"
+                            onClick={handleGenerateRepeatedLines}
+                            disabled={!lineRepeaterInput.trim()}
+                        >
+                            <Repeat className="mr-2 h-4 w-4" />
+                            Generate Lines
+                        </Button>
+                    </div>
+
+                    {/* Output Column */}
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="repeater-output">Generated Lines</Label>
+                            <Textarea
+                                id="repeater-output"
+                                readOnly
+                                className="min-h-[200px] resize-y bg-muted/50"
+                                value={lineRepeaterOutput}
+                                placeholder="Repeated lines will appear here..."
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => handleCopyOutput(lineRepeaterOutput)}
+                                disabled={!lineRepeaterOutput}
+                            >
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copy List
+                            </Button>
+                            <div className="w-full">
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => promptDownload(lineRepeaterOutput, 'niazi-tools-repeated-lines.txt')}
+                                    disabled={!lineRepeaterOutput}
+                                >
+                                    <Download className="mr-2 h-4 w-4" />
+                                    Download List
+                                </Button>
+                                <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+    if (activeTool === "campaign-builder") {
+    return (
+        <div className="space-y-8">
+            {!campaignHasGenerated ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Column 1: Emails and Subjects */}
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>1. Emails</CardTitle>
+                            <CardDescription>Paste or upload emails. If more than 100 are provided, only the first 100 will be used.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                             <Textarea
+                                id="campaign-emails"
+                                placeholder="email1@example.com
+email2@example.com
+..."
+                                className="min-h-[150px] resize-y"
+                                value={campaignEmails}
+                                onChange={(e) => setCampaignEmails(e.target.value)}
+                            />
+                             <div className="flex flex-col sm:flex-row gap-2">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => handlePaste(setCampaignEmails)}>
+                                    <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                                </Button>
+                                <div className="w-full">
+                                  <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderEmailsRef.current?.click()}>
+                                      <Upload className="mr-2 h-4 w-4" /> Upload
+                                  </Button>
+                                  <input type="file" ref={campaignBuilderEmailsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignFileUpload(e, 'emails')} />
+                                  <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                         <CardHeader>
+                            <CardTitle>2. Subjects</CardTitle>
+                            <CardDescription>Add up to 10 subject lines to rotate through.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                           <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
+                                {campaignSubjects.map((pair, index) => (
+                                    <div key={pair.id} className="flex items-center gap-2">
+                                        <Input
+                                            id={`subject-${pair.id}`}
+                                            placeholder={`Subject ${index + 1}`}
+                                            value={pair.value}
+                                            onChange={(e) => handleDynamicPairChange(pair.id, e.target.value, setCampaignSubjects)}
+                                        />
+                                        {campaignSubjects.length > 1 && (
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveDynamicPair(pair.id, setCampaignSubjects)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {campaignSubjects.length < 10 && (
+                                <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignSubjects, campaignSubjects)}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Subject
+                                </Button>
+                            )}
+                             <div className="w-full">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderSubjectsRef.current?.click()}>
+                                  <Upload className="mr-2 h-4 w-4" /> Upload Subjects
+                                </Button>
+                                <input type="file" ref={campaignBuilderSubjectsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignFileUpload(e, 'subjects')} />
+                                <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Column 2: Paragraphs and Times */}
+                <div className="space-y-6">
+                    <Card>
+                         <CardHeader>
+                            <CardTitle>3. Paragraphs</CardTitle>
+                            <CardDescription>Add paragraphs. Must match the number of subjects.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                           <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
+                                {campaignParagraphs.map((pair, index) => (
+                                    <div key={pair.id} className="flex items-start gap-2">
+                                        <Textarea
+                                            id={`paragraph-${pair.id}`}
+                                            placeholder={`Paragraph ${index + 1}`}
+                                            value={pair.value}
+                                            onChange={(e) => handleDynamicPairChange(pair.id, e.target.value, setCampaignParagraphs)}
+                                            className="min-h-[80px]"
+                                        />
+                                        {campaignParagraphs.length > 1 && (
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveDynamicPair(pair.id, setCampaignParagraphs)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {campaignParagraphs.length < 10 && (
+                                <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignParagraphs, campaignParagraphs)}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Paragraph
+                                </Button>
+                            )}
+                            <div className="w-full">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderParagraphsRef.current?.click()}>
+                                  <Upload className="mr-2 h-4 w-4" /> Upload Paragraphs
+                                </Button>
+                                <input type="file" ref={campaignBuilderParagraphsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignFileUpload(e, 'paragraphs')} multiple />
+                                <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>4. Times</CardTitle>
+                            <CardDescription>Set the start time and interval for automatic time generation.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                               <div className="space-y-2">
+                                    <Label htmlFor="campaign-start-time">Start Time</Label>
+                                    <Input
+                                        id="campaign-start-time"
+                                        type="time"
+                                        value={campaignStartTime}
+                                        onChange={(e) => setCampaignStartTime(e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="campaign-interval">Interval (mins)</Label>
+                                    <Input
+                                        id="campaign-interval"
+                                        type="number"
+                                        value={campaignTimeInterval}
+                                        onChange={(e) => setCampaignTimeInterval(Math.max(1, parseInt(e.target.value) || 1))}
+                                        min="1"
+                                    />
+                                </div>
+                            </div>
+                             <p className="text-sm text-muted-foreground text-center">Times will be auto-generated based on the number of emails you provide.</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+            ) : null}
+
+            {campaignHasGenerated ? (
+                 <>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Settings className="h-4 w-4" />
+                            <Label>Copy Action</Label>
+                        </div>
+                        <RadioGroup value={campaignCopyAction} onValueChange={(v: CampaignCopyAction) => setCampaignCopyAction(v)} className="flex gap-4 sm:gap-8 flex-wrap">
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="mark" id="cbr1" />
+                                <Label htmlFor="cbr1" className="cursor-pointer">Mark field as copied</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="remove_field" id="cbr3" />
+                                <Label htmlFor="cbr3" className="cursor-pointer">Remove field on copy</Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
+                    {renderCampaignOutput()}
+                </>
+            ) : null }
+
+            <div className="mt-8 flex flex-col gap-4">
+              {!campaignHasGenerated ? (
+                <Button onClick={handleGenerateCampaign} size="lg">
+                    <MailPlus className="mr-2 h-5 w-5" />
+                    Generate Campaign List
+                </Button>
+              ) : null}
+            </div>
+        </div>
+    )
+}
+
+
     return null;
   };
 
@@ -1498,6 +2308,168 @@ Like this one."
       )}
     </div>
   );
+  
+  const CopyableField = ({ text, onCopy, isCopied = false }: { text: string; onCopy: () => void; isCopied?: boolean; }) => {
+  
+    const handleCopy = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (campaignCopyAction === 'mark' && isCopied) return;
+
+        try {
+            await navigator.clipboard.writeText(text);
+            onCopy();
+        } catch (err) {
+            console.error("Failed to copy: ", err);
+        }
+    };
+  
+    return (
+        <div
+            onClick={handleCopy}
+            className={cn(
+                "relative group flex items-center p-2 rounded-md border transition-all cursor-pointer bg-card hover:bg-accent/50",
+                isCopied && "bg-primary/10 opacity-70 cursor-not-allowed"
+            )}
+        >
+            <p className={cn(
+                "flex-grow pr-8 text-sm truncate text-card-foreground",
+                isCopied && "line-through"
+            )}>
+                {text}
+            </p>
+            <div className="absolute right-2 flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {isCopied ? (
+                    <Check className="h-4 w-4 text-primary" />
+                ) : (
+                    <Copy className="h-4 w-4 text-muted-foreground" />
+                )}
+            </div>
+             {isCopied && !text.includes('group-hover') && <Check className="absolute right-2 h-4 w-4 text-primary" />}
+        </div>
+    );
+  };
+  
+  const renderCampaignOutput = () => (
+    <div className="mt-8">
+        <Separator className="my-6" />
+        {campaignOutput.length > 0 ? (
+            <>
+                <h3 className="text-lg font-semibold text-center mb-4 text-foreground/80">
+                    Your Campaign Lines ({campaignOutput.length})
+                </h3>
+                <div className="space-y-4">
+                    {campaignOutput.map((item, index) => (
+                      editingCampaignItemId === item.id ? (
+                        // EDITING STATE
+                        <div key={item.id} className="p-4 border rounded-lg bg-accent/20 space-y-3">
+                           <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold">{index + 1}</Badge>
+                              <Input
+                                value={editingCampaignItemData.email || ''}
+                                onChange={(e) => setEditingCampaignItemData(d => ({ ...d, email: e.target.value }))}
+                                className="font-semibold text-lg"
+                              />
+                           </div>
+                           <div className="space-y-2">
+                            <Label className="text-xs text-muted-foreground pl-1">Subject</Label>
+                            <Input value={editingCampaignItemData.subject || ''} onChange={(e) => setEditingCampaignItemData(d => ({...d, subject: e.target.value}))} />
+                            <Label className="text-xs text-muted-foreground pl-1">Paragraph</Label>
+                            <Textarea value={editingCampaignItemData.paragraph || ''} onChange={(e) => setEditingCampaignItemData(d => ({...d, paragraph: e.target.value}))} className="min-h-[100px]" />
+                            <Label className="text-xs text-muted-foreground pl-1">Time</Label>
+                            <Input value={editingCampaignItemData.time || ''} onChange={(e) => setEditingCampaignItemData(d => ({...d, time: e.target.value}))} />
+                           </div>
+                           <div className="flex justify-end gap-2">
+                              <Button variant="ghost" onClick={handleCancelCampaignItemEdit}><X className="mr-2 h-4 w-4"/>Cancel</Button>
+                              <Button onClick={() => handleSaveCampaignItemEdit(item.id)}><Save className="mr-2 h-4 w-4"/>Save</Button>
+                           </div>
+                        </div>
+                      ) : (
+                        // DISPLAY STATE
+                        <div key={item.id} className="p-4 border rounded-lg bg-card/50 space-y-3 relative group">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold">{index + 1}</Badge>
+                                  {item.email && <p className="font-semibold text-lg truncate">{item.email}</p>}
+                              </div>
+                              <Button size="icon" variant="ghost" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleStartEditCampaignItem(item)}>
+                                <Pencil className="h-4 w-4"/>
+                              </Button>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 gap-y-3 overflow-x-auto">
+                              {item.email !== null && (
+                                <div className="space-y-2 min-w-[250px]">
+                                  <Label className="text-xs text-muted-foreground pl-1">Email</Label>
+                                  <CopyableField
+                                    text={item.email}
+                                    onCopy={() => handleCampaignFieldCopied(item.id, 'email')}
+                                    isCopied={item.copiedFields.has('email')}
+                                  />
+                                </div>
+                              )}
+                              {item.subject !== null && (
+                                <div className="space-y-2 min-w-[250px]">
+                                  <Label className="text-xs text-muted-foreground pl-1">Subject</Label>
+                                  <CopyableField
+                                    text={item.subject}
+                                    onCopy={() => handleCampaignFieldCopied(item.id, 'subject')}
+                                    isCopied={item.copiedFields.has('subject')}
+                                  />
+                                </div>
+                              )}
+                              {item.paragraph !== null && (
+                                <div className="space-y-2 min-w-[250px]">
+                                    <Label className="text-xs text-muted-foreground pl-1">Paragraph</Label>
+                                    <div onClick={async (e) => {
+                                          e.stopPropagation();
+                                          if (campaignCopyAction === 'mark' && item.copiedFields.has('paragraph')) return;
+                                          try {
+                                              await navigator.clipboard.writeText(item.paragraph || '');
+                                              handleCampaignFieldCopied(item.id, 'paragraph');
+                                          } catch (err) {
+                                              console.error("Failed to copy: ", err);
+                                          }
+                                        }}
+                                        className={cn(
+                                          "relative group/p flex items-start p-3 rounded-md border transition-all cursor-pointer bg-card hover:bg-accent/50",
+                                          item.copiedFields.has('paragraph') && "bg-primary/10 opacity-70 cursor-not-allowed"
+                                        )}
+                                      >
+                                        <p className={cn("flex-grow pr-8 text-sm whitespace-pre-wrap text-card-foreground", item.copiedFields.has('paragraph') && "line-through")}>
+                                            {item.paragraph}
+                                        </p>
+                                        <div className="absolute top-2 right-2 flex items-center opacity-0 group-hover/p:opacity-100 transition-opacity">
+                                            {item.copiedFields.has('paragraph') ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
+                                        </div>
+                                        {item.copiedFields.has('paragraph') && <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />}
+                                    </div>
+                                </div>
+                              )}
+                              {item.time !== null && (
+                                <div className="space-y-2 min-w-[250px]">
+                                  <Label className="text-xs text-muted-foreground pl-1">Time</Label>
+                                  <CopyableField
+                                    text={item.time}
+                                    onCopy={() => handleCampaignFieldCopied(item.id, 'time')}
+                                    isCopied={item.copiedFields.has('time')}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                        </div>
+                      )
+                    ))}
+                </div>
+            </>
+        ) : (
+            <div className="text-center text-muted-foreground py-8">
+                <p>All items have been copied/removed.</p>
+                <p className="text-sm">You can start over to generate a new list.</p>
+            </div>
+        )}
+    </div>
+  );
+  
 
   const getToolTitle = () => {
     if (activeTool === "copyable") return "Copyable Lines";
@@ -1505,15 +2477,21 @@ Like this one."
     if (activeTool === "find-replace") return "Find & Replace";
     if (activeTool === "data-extractor") return "Email Extractor";
     if (activeTool === "query-generator") return "Query Generator";
+    if (activeTool === "time-interval-generator") return "Time Interval Generator";
+    if (activeTool === "line-repeater") return "Line Repeater";
+    if (activeTool === "campaign-builder") return "Email Campaign Builder";
     return "";
   };
 
   const getToolDescription = () => {
     if (activeTool === "copyable") return "Paste your text to convert it into individual lines, perfect for easy copying.";
-    if (activeTool === "copyable-paragraphs") return "Paste your text to convert it into individual paragraphs, perfect for easy copying.";
+    if (activeTool === "copyable-paragraphs") return "Add or upload distinct blocks of text to create a list of copyable paragraphs.";
     if (activeTool === "find-replace") return "Perform powerful find and replace operations on your text with multiple rules at once.";
     if (activeTool === "data-extractor") return "Quickly extract all unique email addresses from large blocks of text or uploaded files.";
     if (activeTool === "query-generator") return "Generate location-based search queries for marketing and research.";
+    if (activeTool === "time-interval-generator") return "Quickly generate a list of time entries for schedules, logs, or planning.";
+    if (activeTool === "line-repeater") return "Repeat a single line of text multiple times to generate a large list.";
+    if (activeTool === "campaign-builder") return "Assemble structured data for email campaigns from multiple dynamic inputs.";
     return "";
   };
 
@@ -1522,7 +2500,6 @@ Like this one."
         <header className="absolute top-6 left-6 right-6 z-50 flex justify-between items-center">
             <ThemeToggle theme={theme} setTheme={setTheme} />
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground hidden sm:inline">Follow on</span>
               <a href="https://github.com/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile">
                 <Button size="icon" className="rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-all hover:shadow-lg hover:shadow-primary/20">
                   <Github className="text-white dark:text-black" />
@@ -1579,6 +2556,23 @@ Like this one."
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        
+        <AlertDialog open={showEmailLimitDialog} onOpenChange={setShowEmailLimitDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Email Limit Exceeded</AlertDialogTitle>
+              <AlertDialogDescription>
+                You provided {emailLimitInfo?.count} emails. This tool will use the first 100 entries to generate the campaign. Do you want to continue?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setEmailLimitInfo(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={emailLimitInfo?.onConfirm}>
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <AlertDialog open={showDownloadDialog} onOpenChange={setShowDownloadDialog}>
           <AlertDialogContent>
@@ -1607,6 +2601,24 @@ Like this one."
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <AlertDialog open={showLargeGenerationDialog} onOpenChange={setShowLargeGenerationDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>🚀 Whoa, That's a Big Request!</AlertDialogTitle>
+              <AlertDialogDescription>
+                You're generating a very large list! To keep your browser running fast and smooth, we'll create this file and download it for you directly instead of displaying it on the page.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setLargeGenerationInfo(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={largeGenerationInfo?.onConfirm}>
+                Download Now
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
 
         <div className={`w-full ${activeTool ? 'max-w-6xl' : 'max-w-4xl'} transition-all duration-500`}>
           <AppHeader />
@@ -1642,7 +2654,7 @@ Like this one."
                 <ToolCard
                   icon={<Pilcrow className="h-8 w-8 text-primary" />}
                   title="Copyable Paragraphs"
-                  description="Convert text into individual, easy-to-copy paragraphs."
+                  description="Add or upload distinct blocks of text to create a list of copyable paragraphs."
                   onClick={() => setActiveTool("copyable-paragraphs")}
                 />
                 <ToolCard
@@ -1662,6 +2674,27 @@ Like this one."
                   title="Query Generator"
                   description="Generate location-based search queries."
                   onClick={() => setActiveTool("query-generator")}
+                />
+                <ToolCard
+                  icon={<Clock className="h-8 w-8 text-primary" />}
+                  title="Time Interval Generator"
+                  description="Generate a list of times for schedules or logs."
+                  onClick={() => setActiveTool("time-interval-generator")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<Repeat className="h-8 w-8 text-primary" />}
+                  title="Line Repeater"
+                  description="Repeat a single line of text multiple times."
+                  onClick={() => setActiveTool("line-repeater")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<MailPlus className="h-8 w-8 text-primary" />}
+                  title="Email Campaign Builder"
+                  description="Assemble campaign data from multiple inputs."
+                  onClick={() => setActiveTool("campaign-builder")}
+                  isNew
                 />
               </div>
 
@@ -1722,13 +2755,22 @@ Like this one."
             </>
           ) : (
             <div className="w-full animate-in fade-in-50 duration-500">
-              <Button
-                className="mb-6 bg-gray-900 text-white dark:bg-gray-600 hover:bg-primary hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/20 transition-all"
-                onClick={handleBackToHome}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Home
-              </Button>
+              <div className="mb-6 flex justify-between items-center">
+                <Button
+                  className="bg-gray-900 text-white dark:bg-gray-600 hover:bg-primary hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/20 transition-all"
+                  onClick={handleBackToHome}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Home
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={clearActiveTool}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Start Over
+                </Button>
+              </div>
               <div className="text-center mb-8">
                   <h2 className="text-4xl font-bold tracking-tight text-cyan-400">{getToolTitle()}</h2>
                   <p className="mt-2 text-lg text-muted-foreground max-w-2xl mx-auto">{getToolDescription()}</p>
@@ -1739,6 +2781,13 @@ Like this one."
               <ToolHelp tool={activeTool} toolName={getToolTitle()} />
             </div>
           )}
+        </div>
+        <div className="fixed bottom-6 right-6 z-50 transition-opacity duration-300">
+           {showScroll && (
+                <Button size="icon" onClick={scrollTop} className="rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90">
+                    <ArrowUp />
+                </Button>
+            )}
         </div>
         <div className="fixed bottom-6 left-6 z-50">
             <Button 
@@ -1752,5 +2801,3 @@ Like this one."
       </main>
   );
 }
-
-    

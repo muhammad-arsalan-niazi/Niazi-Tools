@@ -40,12 +40,6 @@ export function CopyableLine({
         onCopy();
       }
 
-      const truncatedText = text.length > 40 ? `${text.substring(0, 40)}...` : text;
-      toast({
-        title: "Copied to clipboard!",
-        description: `"${truncatedText}"`,
-      });
-
     } catch (err) {
       console.error("Failed to copy text: ", err);
       toast({

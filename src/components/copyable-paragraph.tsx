@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -40,12 +39,6 @@ export function CopyableParagraph({
       if (!isCopied) {
         onCopy();
       }
-
-      const truncatedText = text.length > 40 ? `${text.substring(0, 40)}...` : text;
-      toast({
-        title: "Copied to clipboard!",
-        description: `Paragraph starting with: "${truncatedText}"`,
-      });
 
     } catch (err) {
       console.error("Failed to copy text: ", err);
@@ -145,3 +138,5 @@ export function CopyableParagraph({
     </div>
   );
 }
+
+    

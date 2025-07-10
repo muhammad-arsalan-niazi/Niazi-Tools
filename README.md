@@ -8,7 +8,6 @@ Welcome to **Niazi Tools**, a powerful and privacy-focused web application desig
 -   **Privacy-First:** All processing happens locally in your browser. Your data stays with you.
 -   **Offline Capable:** Once loaded, the app can work without an internet connection.
 -   **Modern & Responsive UI:** A clean, intuitive, and mobile-friendly interface built with ShadCN UI and Tailwind CSS.
--   **AI-Powered:** Utilizes generative AI for intelligent text processing tasks.
 -   **Dark & Light Mode:** Choose the theme that suits your preference.
 
 ## 🛠️ Tools Available
@@ -19,16 +18,25 @@ Niazi Tools currently offers the following powerful utilities:
 Convert a large block of text into a list of individual lines. Each line can be edited, deleted, or copied with a single click, either marking it as done or removing it from the list. Perfect for working through lists, tasks, or data.
 
 ### 2. 📝 Copyable Paragraphs
-Similar to Copyable Lines, this tool splits a large text block into individual paragraphs based on blank lines. Each paragraph can be edited, deleted, or copied, making it ideal for working with articles, reports, or long-form content.
+Add up to 10 paragraphs manually or upload multiple .txt files in bulk. The tool converts them into a list of distinct, copyable paragraphs, preserving all original formatting. It's ideal for working with articles, reports, or long-form content.
 
 ### 3. 🔍 Find & Replace
-Perform powerful bulk find-and-replace operations on your text. You can add multiple rules for finding and replacing text and apply them all at once.
+Perform powerful bulk find-and-replace operations on your text. You can add up to 10 rules for finding and replacing text and apply them all at once.
 
 ### 4. 📧 Email Extractor
-Quickly scan large amounts of text or upload files (.txt, .csv, .xls, and .xlsx) to find all email addresses, count their occurrences, and list the unique ones.
+Quickly scan large amounts of text or upload files (.txt, .csv, .xls, and .xlsx) to find all email addresses, count their occurrences, and list the unique ones. The tool intelligently prioritizes email columns in spreadsheet files.
 
 ### 5. 🗺️ Query Generator
 Instantly generate a list of search queries for a specific service across all major locations (states, counties, or provinces) of a selected country (UK, USA, or Canada). Perfect for market research or lead generation campaigns.
+
+### 6. ⏰ Time Interval Generator
+Create a list of time entries based on a starting time, a fixed interval, and the number of entries you need. Ideal for creating schedules, timetables, or event timelines. You can generate thousands of entries and download them as a .txt file.
+
+### 7. 🔁 Line Repeater
+Quickly generate a large number of repeated lines from a single piece of text. Perfect for creating test data, bulk lists, or any scenario where you need to duplicate a line many times. It supports downloading for very large lists.
+
+### 8. 🚀 Email Campaign Builder
+A powerful tool to assemble campaign data. Combine a list of emails with rotating subjects and paragraphs, paired with auto-generated time slots. The output provides separate, individually copyable and editable fields for easy use in your email client.
 
 ## 🚀 Technology Stack
 
@@ -36,7 +44,6 @@ Instantly generate a list of search queries for a specific service across all ma
 -   **UI Library:** [React](https://reactjs.org/)
 -   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 -   **Component Library:** [ShadCN UI](https://ui.shadcn.com/)
--   **AI Integration:** [Google AI & Genkit](https://firebase.google.com/docs/genkit)
 -   **Icons:** [Lucide React](https://lucide.dev/)
 
 ## 👨‍💻 About the Creator

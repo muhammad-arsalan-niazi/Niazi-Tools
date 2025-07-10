@@ -3,6 +3,7 @@ import { Github, Facebook, Linkedin } from "lucide-react";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
+import { Copyright } from "@/components/copyright";
 
 export const metadata: Metadata = {
   title: "Niazi Tools",
@@ -31,22 +32,7 @@ export default function RootLayout({
       <body className="font-body antialiased flex flex-col min-h-svh">
         <div className="flex-1">{children}</div>
         <footer className="text-center p-6 mt-8 text-muted-foreground text-sm border-t">
-          <div className="mb-4">
-            Copyright © {new Date().getFullYear()}{' '}
-            <span className="font-headline tracking-wider bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient">
-              Niazi Tools
-            </span>
-            . Made with <span className="text-red-500">❤️</span> in Pakistan by{' '}
-            <a
-              href="https://github.com/muhammad-arsalan-niazi"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary hover:underline underline-offset-4"
-            >
-              Muhammad Arsalan Niazi
-            </a>
-            .
-          </div>
+          <Copyright />
            <div className="flex items-center justify-center gap-3">
               <span className="text-sm text-muted-foreground hidden sm:inline">Follow on</span>
               <a href="https://github.com/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile">
@@ -71,3 +57,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    
