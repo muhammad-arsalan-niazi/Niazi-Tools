@@ -1187,20 +1187,24 @@ export default function Home() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
   
-    const file = files[0];
-    if (file.type !== 'text/plain') {
-        event.target.value = '';
-        return;
-    };
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const content = e.target?.result as string;
-        if (!content) return;
-
-        if (field === 'emails') {
-            setCampaignEmails(prev => prev ? `${prev}\n${content}` : content);
-        } else if (field === 'subjects') {
+    if (field === 'emails') {
+        const file = files[0];
+        if (file.type !== 'text/plain') { event.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            if (content) {
+                setCampaignEmails(prev => prev ? `${prev}\n${content}` : content);
+            }
+        };
+        reader.readAsText(file);
+    } else if (field === 'subjects') {
+        const file = files[0];
+        if (file.type !== 'text/plain') { event.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            if (!content) return;
             const lines = content.split('\n').map(line => line.trim()).filter(Boolean);
             const newSubjects = lines.slice(0, 10).map(line => ({
                 id: Date.now() + Math.random(),
@@ -1209,18 +1213,39 @@ export default function Home() {
             const existingNonEmpty = campaignSubjects.filter(p => p.value.trim());
             const combined = [...existingNonEmpty, ...newSubjects].slice(0, 10);
             setCampaignSubjects(combined.length > 0 ? combined : [{ id: Date.now(), value: '' }]);
-        } else if (field === 'paragraphs') {
-            const newParagraphs = [{
+        };
+        reader.readAsText(file);
+    } else if (field === 'paragraphs') {
+        const fileReadPromises = Array.from(files).map(file => {
+            return new Promise<string>((resolve, reject) => {
+                if (file.type === 'text/plain') {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target?.result as string);
+                    reader.onerror = e => reject(e);
+                    reader.readAsText(file);
+                } else {
+                    resolve('');
+                }
+            });
+        });
+
+        Promise.all(fileReadPromises).then(contents => {
+            const validContents = contents.filter(Boolean);
+            if (validContents.length === 0) return;
+
+            const newPairs = validContents.map(content => ({
                 id: Date.now() + Math.random(),
                 value: content
-            }];
-            const existingNonEmpty = campaignParagraphs.filter(p => p.value.trim());
-            const combined = [...existingNonEmpty, ...newParagraphs].slice(0, 10);
-            setCampaignParagraphs(combined.length > 0 ? combined : [{ id: Date.now(), value: '' }]);
-        }
-    };
+            }));
+            
+            setCampaignParagraphs(prev => {
+              const existingNonEmpty = prev.filter(p => p.value.trim());
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 10);
+              return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+        });
+    }
 
-    reader.readAsText(file);
     event.target.value = '';
   };
   
@@ -2168,9 +2193,9 @@ email2@example.com
                             )}
                             <div className="w-full">
                                 <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderParagraphsRef.current?.click()}>
-                                  <Upload className="mr-2 h-4 w-4" /> Upload Paragraph
+                                  <Upload className="mr-2 h-4 w-4" /> Upload Paragraphs
                                 </Button>
-                                <input type="file" ref={campaignBuilderParagraphsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignFileUpload(e, 'paragraphs')} />
+                                <input type="file" ref={campaignBuilderParagraphsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignFileUpload(e, 'paragraphs')} multiple/>
                                 <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported. Each file is one paragraph.</p>
                             </div>
                         </CardContent>

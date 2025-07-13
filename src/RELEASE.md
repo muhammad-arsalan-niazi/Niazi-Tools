@@ -1,7 +1,7 @@
-# Release Notes - v2.0.1
+# Release Notes - v2.0.2
 
-This is a patch release to address a specific issue in the Email Campaign Builder tool.
+This is a patch release to address a specific issue in the Email Campaign Builder.
 
 ## 🐛 Bug Fixes
 
--   **Email Campaign Builder:** Fixed an issue where uploading a `.txt` file for subjects was not working correctly. The tool will now properly read up to 10 lines from the uploaded file and populate them as individual subjects, as intended.
+-   **Email Campaign Builder:** Fixed an issue where uploading multiple `.txt` files for paragraphs was not working correctly. The tool now properly treats each uploaded file as a single, distinct paragraph.
