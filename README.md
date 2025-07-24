@@ -26,17 +26,35 @@ Perform powerful bulk find-and-replace operations on your text. You can add up t
 ### 4. 📧 Email Extractor
 Quickly scan large amounts of text or upload files (.txt, .csv, .xls, and .xlsx) to find all email addresses, count their occurrences, and list the unique ones. The tool intelligently prioritizes email columns in spreadsheet files.
 
-### 5. 🗺️ Query Generator
+### 5. 📞 Phone Number Extractor
+A precision tool to extract phone numbers from text or files. It's specifically optimized to find phone numbers from columns with a "Phone" header in Excel files, while also supporting robust extraction from plain text.
+
+### 6. 🗺️ Query Generator
 Instantly generate a list of search queries for a specific service across all major locations (states, counties, or provinces) of a selected country (UK, USA, or Canada). Perfect for market research or lead generation campaigns.
 
-### 6. ⏰ Time Interval Generator
+### 7. ⏰ Time Interval Generator
 Create a list of time entries based on a starting time, a fixed interval, and the number of entries you need. Ideal for creating schedules, timetables, or event timelines. You can generate thousands of entries and download them as a .txt file.
 
-### 7. 🔁 Line Repeater
+### 8. 🔁 Line Repeater
 Quickly generate a large number of repeated lines from a single piece of text. Perfect for creating test data, bulk lists, or any scenario where you need to duplicate a line many times. It supports downloading for very large lists.
 
-### 8. 🚀 Email Campaign Builder
+### 9. 🚀 Email Campaign Builder
 A powerful tool to assemble campaign data. Combine a list of emails with rotating subjects and paragraphs, paired with auto-generated time slots. The output provides separate, individually copyable and editable fields for easy use in your email client.
+
+### 10. 📊 List Sorter & Randomizer
+An essential utility for organizing text lists. Paste your list and instantly sort it alphabetically, numerically, reverse the order, or shuffle it randomly.
+
+### 11. ✍️ Case Converter
+A simple yet powerful tool for changing text capitalization. Paste any text and convert it to UPPERCASE, lowercase, Title Case, or Sentence case with a single click.
+
+### 12. 🔢 Character & Word Counter
+Get detailed statistics on your text in real-time. This tool counts characters (with and without spaces), words, sentences, and paragraphs as you type or paste text.
+
+### 13. 🔄 List Comparison
+Compare two lists to find what's unique and what they share. This tool is perfect for reconciling data, checking for changes, or merging lists.
+
+### 14. 🗑️ Duplicate Line Remover
+Quickly clean up any list by removing all duplicate lines. This tool leaves you with a clean list of only the unique entries.
 
 ## 🚀 Technology Stack
 

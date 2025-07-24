@@ -37,6 +37,13 @@ import {
   ArrowUp,
   Pencil,
   Save,
+  Loader2,
+  ListOrdered,
+  CaseSensitive,
+  Calculator,
+  Diff,
+  Eraser,
+  Phone,
 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
@@ -79,7 +86,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cleanupLines, CleanupLinesInput } from "@/ai/flows/cleanupLinesFlow";
 import { extractData, ExtractDataInput } from "@/ai/flows/extractDataFlow";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ukLocations, usaLocations, canadaLocations } from "@/lib/locations";
+import { ukLocations } from "@/lib/locations";
 import { cn } from "@/lib/utils";
 import { Copyright } from "@/components/copyright";
 
@@ -112,11 +119,31 @@ type FindReplacePair = {
 
 type CopyAction = "mark" | "remove";
 type CampaignCopyAction = "mark" | "remove_field";
-type ActiveTool = "copyable" | "copyable-paragraphs" | "find-replace" | "data-extractor" | "query-generator" | "time-interval-generator" | "line-repeater" | "campaign-builder" | null;
+type ActiveTool = 
+  "copyable" | 
+  "copyable-paragraphs" | 
+  "find-replace" | 
+  "data-extractor" | 
+  "phone-extractor" |
+  "query-generator" | 
+  "time-interval-generator" | 
+  "line-repeater" | 
+  "campaign-builder" | 
+  "list-sorter" |
+  "case-converter" |
+  "counter" |
+  "list-comparison" |
+  "duplicate-remover" |
+  null;
 
 type ExtractedDataItem = {
     email: string;
     count: number;
+};
+
+type ExtractedPhoneItem = {
+  phone: string;
+  count: number;
 };
 
 type DynamicPair = {
@@ -202,16 +229,37 @@ const toolHelpContent = {
       }
     ]
   },
+  'phone-extractor': {
+    description: "A precision tool to extract phone numbers from text or files. 📞 It's specifically optimized to find phone numbers from columns with a 'Phone' header in Excel files.",
+    faqs: [
+      {
+        question: "How does this tool work with Excel files? 📊",
+        answer: "It is highly precise. The tool exclusively scans for columns with a header containing the word 'Phone' (case-insensitive). It then extracts all valid phone numbers from that column, ignoring empty cells. Other columns are ignored."
+      },
+      {
+        question: "What about other file types or pasted text? 📋",
+        answer: "For plain text (.txt), CSV files, or text pasted directly, the tool uses a robust pattern-matching algorithm (regular expression) to find a wide variety of phone number formats from anywhere in the text."
+      },
+      {
+        question: "What formats of phone numbers can it detect? 🔢",
+        answer: "It's designed to recognize many common formats, including those with parentheses, hyphens, spaces, and country codes (e.g., (123) 456-7890, 123-456-7890, +1 123 456 7890)."
+      },
+      {
+        question: "How is the output presented? 📝",
+        answer: "Just like the Email Extractor, you get two clean lists: one showing every unique phone number and how many times it appeared, and another box with just the unique numbers, ready to be copied or downloaded."
+      }
+    ]
+  },
   'query-generator': {
     description: "Instantly generate a list of search queries for a specific service across all states, counties, or provinces of a selected country. 🗺️ Perfect for market research or lead generation campaigns.",
     faqs: [
       {
         question: "How does it know all the locations? 🤔",
-        answer: "The tool uses a pre-compiled list of major administrative areas (like states in the USA or counties in the UK) for each supported country. It's fast and doesn't require an internet connection to generate the list."
+        answer: "For most countries, the tool uses a pre-compiled list of major administrative areas. For the USA, Canada, and Australia it downloads a comprehensive list of thousands of cities on-demand to provide extensive coverage without slowing down the app's initial load time."
       },
       {
         question: "Can I add more countries or more specific locations? ✍️",
-        answer: "Currently, the tool supports the UK, USA, and Canada with their primary regions. Future updates may include more countries or more detailed city-level data."
+        answer: "Currently, the tool supports the UK, USA, Canada, and Australia with their primary regions. Future updates may include more countries or more detailed city-level data."
       },
       {
         question: "What's the best way to use the generated list? 📋",
@@ -273,6 +321,91 @@ const toolHelpContent = {
             answer: "The output is a list of numbered rows. Each row contains four separate, individually copyable fields: Email, Subject, Paragraph, and Time. This makes it incredibly easy to copy and paste each part directly into your email client."
           }
       ]
+    },
+    'list-sorter': {
+        description: "An essential utility for organizing text lists. Paste your list and instantly sort it alphabetically, numerically, reverse the order, or shuffle it randomly.",
+        faqs: [
+            {
+                question: "How does numerical sorting work? 🤔",
+                answer: "Numerical sorting is designed for lines that start with numbers (e.g., '1. Apple', '10. Orange'). It correctly sorts them based on the number's value, not just the first digit, so '2' comes before '10'."
+            },
+            {
+                question: "What does 'Shuffle' do? 🎲",
+                answer: "The shuffle button randomly reorders all the lines in your list. It's perfect for creating random assignments, contest drawings, or just mixing things up."
+            },
+            {
+                question: "Can I sort mixed lists of text and numbers? 🔠",
+                answer: "Yes. The standard A-Z sort will handle all lines. For the best results with numerical sorting, ensure your lines begin with a number."
+            }
+        ]
+    },
+    'case-converter': {
+        description: "A simple yet powerful tool for changing text capitalization. Paste any text and convert it to UPPERCASE, lowercase, Title Case, or Sentence case with a single click.",
+        faqs: [
+            {
+                question: "What is 'Title Case'? 🤔",
+                answer: "'Title Case' Capitalizes The First Letter Of Every Word. It's commonly used for headlines and titles."
+            },
+            {
+                question: "What is 'Sentence case'? ✍️",
+                answer: "'Sentence case' capitalizes only the first letter of the first word in each sentence. It's the standard for most writing."
+            },
+            {
+                question: "Does this affect the original text? 🛡️",
+                answer: "No. Your original text in the input box is never changed. The converted text appears in a separate output box, ready to be copied."
+            }
+        ]
+    },
+    'counter': {
+        description: "Get detailed statistics on your text in real-time. This tool counts characters (with and without spaces), words, sentences, and paragraphs as you type or paste text.",
+        faqs: [
+            {
+                question: "How are sentences counted? 🤔",
+                answer: "Sentences are typically counted by looking for punctuation marks like periods (.), question marks (?), and exclamation points (!)."
+            },
+            {
+                question: "Is there a limit to the amount of text I can analyze? 📈",
+                answer: "No, there's no practical limit. The tool is designed to handle very large blocks of text efficiently right in your browser."
+            },
+            {
+                question: "Are the counts updated automatically? ⚡",
+                answer: "Yes! The statistics update instantly as you modify the text in the input area, giving you immediate feedback."
+            }
+        ]
+    },
+    'list-comparison': {
+        description: "Compare two lists to find what's unique and what they share. This tool is perfect for reconciling data, checking for changes, or merging lists.",
+        faqs: [
+            {
+                question: "How do I use this tool? 🤔",
+                answer: "Paste your first list into 'List A' and your second list into 'List B'. The tool will automatically show you which items are unique to each list and which items appear in both."
+            },
+            {
+                question: "Is the comparison case-sensitive? ✍️",
+                answer: "By default, the comparison is case-insensitive (so 'Apple' and 'apple' are treated as the same). There's usually an option to make the comparison case-sensitive if you need it."
+            },
+            {
+                question: "What can I do with the results? 📋",
+                answer: "Each of the resulting lists (Unique to A, Unique to B, and In Both) can be copied to your clipboard with a single click."
+            }
+        ]
+    },
+    'duplicate-remover': {
+        description: "Quickly clean up any list by removing all duplicate lines. This tool leaves you with a clean list of only the unique entries.",
+        faqs: [
+            {
+                question: "How are duplicates identified? 🤔",
+                answer: "A line is considered a duplicate if it exactly matches another line in the list. By default, this is case-insensitive ('Apple' and 'apple' are duplicates)."
+            },
+            {
+                question: "Can I make the check case-sensitive? ✍️",
+                answer: "Yes, there's a checkbox option to make the comparison case-sensitive. If you check it, 'Apple' and 'apple' will be treated as two different, unique lines."
+            },
+            {
+                question: "Will the original order be preserved? ➡️",
+                answer: "Yes. The tool keeps the first occurrence of each unique line and preserves its original position in the list."
+            }
+        ]
     }
 };
 
@@ -372,6 +505,7 @@ export default function Home() {
   const copyableFileInputRef = useRef<HTMLInputElement>(null);
   const findReplaceFileInputRef = useRef<HTMLInputElement>(null);
   const extractorFileInputRef = useRef<HTMLInputElement>(null);
+  const phoneExtractorFileInputRef = useRef<HTMLInputElement>(null);
   const campaignBuilderEmailsRef = useRef<HTMLInputElement>(null);
   const campaignBuilderSubjectsRef = useRef<HTMLInputElement>(null);
   const campaignBuilderParagraphsRef = useRef<HTMLInputElement>(null);
@@ -397,10 +531,15 @@ export default function Home() {
   const [extractorInput, setExtractorInput] = useState("");
   const [extractedData, setExtractedData] = useState<ExtractedDataItem[] | null>(null);
 
+  // State for Phone Extractor tool
+  const [phoneExtractorInput, setPhoneExtractorInput] = useState("");
+  const [extractedPhones, setExtractedPhones] = useState<ExtractedPhoneItem[] | null>(null);
+
   // State for Query Generator tool
   const [queryService, setQueryService] = useState("");
   const [queryCountry, setQueryCountry] = useState("");
   const [queryOutput, setQueryOutput] = useState("");
+  const [isQueryGenerating, setIsQueryGenerating] = useState(false);
 
   // State for Time Interval Generator tool
   const [startTime, setStartTime] = useState("09:00");
@@ -439,6 +578,30 @@ export default function Home() {
   const [showEmailLimitDialog, setShowEmailLimitDialog] = useState(false);
   const [emailLimitInfo, setEmailLimitInfo] = useState<{ count: number, onConfirm: () => void } | null>(null);
 
+  // --- NEW TOOLS STATE ---
+  // List Sorter
+  const [listSorterInput, setListSorterInput] = useState('');
+  const [listSorterOutput, setListSorterOutput] = useState('');
+
+  // Case Converter
+  const [caseConverterInput, setCaseConverterInput] = useState('');
+  const [caseConverterOutput, setCaseConverterOutput] = useState('');
+
+  // Counter
+  const [counterInput, setCounterInput] = useState('');
+  const [counts, setCounts] = useState({ words: 0, chars: 0, charsNoSpaces: 0, sentences: 0, paragraphs: 0 });
+
+  // List Comparison
+  const [listA, setListA] = useState('');
+  const [listB, setListB] = useState('');
+  const [comparisonResult, setComparisonResult] = useState<{ uniqueA: string[], uniqueB: string[], inBoth: string[] } | null>(null);
+  const [isCaseSensitiveComparison, setIsCaseSensitiveComparison] = useState(false);
+
+  // Duplicate Remover
+  const [duplicateRemoverInput, setDuplicateRemoverInput] = useState('');
+  const [duplicateRemoverOutput, setDuplicateRemoverOutput] = useState('');
+  const [isCaseSensitiveRemover, setIsCaseSensitiveRemover] = useState(false);
+  const [duplicatesRemovedCount, setDuplicatesRemovedCount] = useState<number | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -1031,45 +1194,228 @@ export default function Home() {
     setExtractedData(null);
   };
   
-  // --- Query Generator Tool Functions ---
-  const handleGenerateQueries = () => {
-      if (!queryService.trim() || !queryCountry) {
+  // --- Phone Extractor Tool Functions ---
+  const phoneExtractorOutput = useMemo(() => {
+    if (!extractedPhones) return '';
+    return extractedPhones.map(item => item.phone).join('\n');
+  }, [extractedPhones]);
+
+  const uniquePhoneCount = extractedPhones?.length ?? null;
+  const totalPhoneCount = useMemo(() => {
+      if (!extractedPhones) return null;
+      return extractedPhones.reduce((sum, item) => sum + item.count, 0);
+  }, [extractedPhones]);
+
+  const handlePhoneExtractorFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const filePromises = Array.from(files).map(file => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        const fileType = file.name.split('.').pop()?.toLowerCase();
+
+        reader.onload = (e) => {
+          try {
+            const result = e.target?.result;
+            if (fileType === 'txt' || fileType === 'csv') {
+              resolve(result as string);
+            } else if (fileType === 'xlsx' || fileType === 'xls') {
+              const workbook = XLSX.read(result, { type: 'array' });
+              let excelText = '';
+              
+              workbook.SheetNames.forEach(sheetName => {
+                const worksheet = workbook.Sheets[sheetName];
+                const json_data: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false });
+                
+                if (json_data.length === 0) return;
+
+                const headers = json_data[0].map(h => (typeof h === 'string' ? h.toLowerCase() : ''));
+                const phoneColumnIndexes: number[] = [];
+                
+                headers.forEach((header, index) => {
+                    if (typeof header === 'string' && header.includes('phone')) {
+                        phoneColumnIndexes.push(index);
+                    }
+                });
+
+                if (phoneColumnIndexes.length > 0) {
+                    const phoneData = json_data
+                        .slice(1)
+                        .map(row => phoneColumnIndexes.map(index => row[index] || '').join(' '))
+                        .join('\n');
+                    excelText += phoneData + '\n';
+                } else {
+                    toast({
+                        title: "No 'Phone' Column Found",
+                        description: `In file '${file.name}', no column header containing 'phone' was found. To extract from this file, please paste its content manually.`,
+                        variant: "destructive",
+                        duration: 8000
+                    });
+                }
+              });
+              resolve(excelText);
+            } else {
+              resolve(''); 
+            }
+          } catch (error) {
+            console.error(`Error processing file ${file.name}:`, error);
+            reject(new Error(`Failed to process ${file.name}`));
+          }
+        };
+
+        reader.onerror = (error) => {
+            console.error(`Error reading file ${file.name}:`, error);
+            reject(new Error(`Failed to read ${file.name}`));
+        };
+
+        if (fileType === 'txt' || fileType === 'csv') {
+          reader.readAsText(file);
+        } else if (fileType === 'xlsx' || fileType === 'xls') {
+          reader.readAsArrayBuffer(file);
+        } else {
+           console.warn(`Unsupported file type skipped: ${file.name}`);
+           resolve('');
+        }
+      });
+    });
+
+    Promise.all(filePromises)
+      .then(contents => {
+        const newContent = contents.filter(Boolean).join('\n');
+        if (newContent) {
+          setPhoneExtractorInput(prevInput => prevInput ? `${prevInput}\n${newContent}` : newContent);
           toast({
-              title: "Missing Information",
-              description: "Please enter a service name and select a country.",
-              variant: "destructive",
+            title: "Files Processed",
+            description: `Content from supported files and columns has been loaded.`,
           });
-          return;
-      }
+        }
+      })
+      .catch(error => {
+        console.error("Error processing files:", error);
+        toast({
+          title: "File Processing Error",
+          description: "An error occurred while processing one or more files.",
+          variant: "destructive",
+        });
+      })
+      .finally(() => {
+        if (event.target) {
+          event.target.value = "";
+        }
+      });
+  };
 
-      let locations: string[] = [];
-      let countryName = '';
+  const handleExtractPhones = () => {
+    if (!phoneExtractorInput) return;
 
-      switch (queryCountry) {
-          case "uk":
-              locations = ukLocations;
-              countryName = 'UK';
-              break;
-          case "usa":
-              locations = usaLocations;
-              countryName = 'USA';
-              break;
-          case "canada":
-              locations = canadaLocations;
-              countryName = 'Canada';
-              break;
-      }
-      
-      const generatedQueries = locations.map(
-          location => `${queryService.trim()} in ${location}, ${countryName}`
-      ).join('\n');
-      
-      setQueryOutput(generatedQueries);
-      toast({
-        title: "Queries Generated",
-        description: `Successfully generated ${locations.length} search queries.`,
+    const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
+    const allPhones = phoneExtractorInput.match(phoneRegex) || [];
+
+    if (allPhones.length === 0) {
+        setExtractedPhones([]);
+        toast({
+            title: "No Phone Numbers Found",
+            description: "Could not find any phone numbers in the provided text.",
+            variant: "destructive"
+        });
+        return;
+    }
+
+    const phoneCountsMap: { [phone: string]: number } = {};
+
+    allPhones.forEach(phone => {
+        const cleanedPhone = phone.replace(/[^\d+]/g, '');
+        phoneCountsMap[cleanedPhone] = (phoneCountsMap[cleanedPhone] || 0) + 1;
+    });
+
+    const sortedData = Object.entries(phoneCountsMap)
+        .map(([phone, count]) => ({ phone, count }))
+        .sort((a, b) => a.phone.localeCompare(b.phone));
+
+    setExtractedPhones(sortedData);
+    toast({
+        title: "Extraction Complete",
+        description: `Found ${sortedData.length} unique phone number(s).`,
     });
   };
+
+  const handleClearPhoneExtractor = () => {
+    setPhoneExtractorInput("");
+    setExtractedPhones(null);
+  };
+  
+  // --- Query Generator Tool Functions ---
+  const handleGenerateQueries = async () => {
+    if (!queryService.trim() || !queryCountry) {
+        toast({
+            title: "Missing Information",
+            description: "Please enter a service name and select a country.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    setIsQueryGenerating(true);
+    setQueryOutput("");
+
+    let locations: string[] = [];
+    let countryName = '';
+    let fetchUrl = '';
+
+    switch (queryCountry) {
+        case "uk":
+            locations = ukLocations;
+            countryName = 'UK';
+            break;
+        case "usa":
+            fetchUrl = "https://gist.githubusercontent.com/muhammad-arsalan-niazi/c0d488a59241df57e48cfd01af218f75/raw/8fa40eafd560dcb518298b4a935c191284f58737/usa-cities.txt";
+            countryName = 'USA';
+            break;
+        case "canada":
+            fetchUrl = "https://gist.githubusercontent.com/muhammad-arsalan-niazi/3c5e16d74cec41768aa369fdc331e251/raw/33604f883f36e22802dfb6f2cd1a90728f6ec50c/canada-cities.txt";
+            countryName = 'Canada';
+            break;
+        case "australia":
+            fetchUrl = "https://gist.githubusercontent.com/muhammad-arsalan-niazi/54596d3ae4ff138a010d1a03490efbf4/raw/b0da7afc68ec1359ba6b1a32647c123e61b27299/australia-cities.txt";
+            countryName = 'Australia';
+            break;
+    }
+
+    if (fetchUrl) {
+        try {
+            const response = await fetch(fetchUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch location list for ${countryName}`);
+            }
+            const text = await response.text();
+            locations = text.split('\n').filter(Boolean);
+        } catch (error) {
+            console.error("Failed to generate queries:", error);
+            toast({
+                title: "Error",
+                description: `Could not fetch the location list for ${countryName}. Please check your internet connection and try again.`,
+                variant: "destructive"
+            });
+            setIsQueryGenerating(false);
+            return;
+        }
+    }
+
+    if (locations.length > 0) {
+        const generatedQueries = locations.map(
+            location => `${queryService.trim()} in ${location}`
+        ).join('\n');
+        
+        setQueryOutput(generatedQueries);
+        toast({
+            title: "Queries Generated",
+            description: `Successfully generated ${locations.length} search queries.`,
+        });
+    }
+
+    setIsQueryGenerating(false);
+};
 
   const handleClearQueryGenerator = () => {
       setQueryService("");
@@ -1199,22 +1545,34 @@ export default function Home() {
         };
         reader.readAsText(file);
     } else if (field === 'subjects') {
-        const file = files[0];
-        if (file.type !== 'text/plain') { event.target.value = ''; return; }
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const content = e.target?.result as string;
-            if (!content) return;
-            const lines = content.split('\n').map(line => line.trim()).filter(Boolean);
-            const newSubjects = lines.slice(0, 10).map(line => ({
+        const fileReadPromises = Array.from(files).map(file => {
+            return new Promise<string>((resolve, reject) => {
+                if (file.type === 'text/plain') {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target?.result as string);
+                    reader.onerror = e => reject(e);
+                    reader.readAsText(file);
+                } else {
+                    resolve('');
+                }
+            });
+        });
+
+        Promise.all(fileReadPromises).then(contents => {
+            const validContents = contents.join('\n').split('\n').map(line => line.trim()).filter(Boolean);
+            if (validContents.length === 0) return;
+
+            const newPairs = validContents.map(content => ({
                 id: Date.now() + Math.random(),
-                value: line
+                value: content
             }));
-            const existingNonEmpty = campaignSubjects.filter(p => p.value.trim());
-            const combined = [...existingNonEmpty, ...newSubjects].slice(0, 10);
-            setCampaignSubjects(combined.length > 0 ? combined : [{ id: Date.now(), value: '' }]);
-        };
-        reader.readAsText(file);
+            
+            setCampaignSubjects(prev => {
+              const existingNonEmpty = prev.filter(p => p.value.trim());
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 10);
+              return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+        });
     } else if (field === 'paragraphs') {
         const fileReadPromises = Array.from(files).map(file => {
             return new Promise<string>((resolve, reject) => {
@@ -1382,12 +1740,133 @@ export default function Home() {
       case 'copyable-paragraphs': handleClearAllParagraphs(); break;
       case 'find-replace': handleClearFindReplace(); break;
       case 'data-extractor': handleClearExtractor(); break;
+      case 'phone-extractor': handleClearPhoneExtractor(); break;
       case 'query-generator': handleClearQueryGenerator(); break;
       case 'time-interval-generator': handleClearTimeGenerator(); break;
       case 'line-repeater': handleClearLineRepeater(); break;
       case 'campaign-builder': handleClearCampaignBuilder(); break;
+      case 'list-sorter': setListSorterInput(''); setListSorterOutput(''); break;
+      case 'case-converter': setCaseConverterInput(''); setCaseConverterOutput(''); break;
+      case 'counter': setCounterInput(''); handleCounterUpdate(''); break;
+      case 'list-comparison': setListA(''); setListB(''); setComparisonResult(null); break;
+      case 'duplicate-remover': setDuplicateRemoverInput(''); setDuplicateRemoverOutput(''); setDuplicatesRemovedCount(null); break;
     }
   }
+
+  // --- NEW TOOLS LOGIC ---
+
+  // List Sorter
+  const handleSortList = (sortType: 'az' | 'za' | 'num' | 'rev' | 'shuf') => {
+    const lines = listSorterInput.split('\n').filter(l => l.trim() !== '');
+    let sortedLines = [...lines];
+
+    switch (sortType) {
+        case 'az':
+            sortedLines.sort((a, b) => a.localeCompare(b));
+            break;
+        case 'za':
+            sortedLines.sort((a, b) => b.localeCompare(a));
+            break;
+        case 'num':
+            sortedLines.sort((a, b) => {
+                const numA = parseFloat(a);
+                const numB = parseFloat(b);
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return numA - numB;
+                }
+                return a.localeCompare(b);
+            });
+            break;
+        case 'rev':
+            sortedLines.reverse();
+            break;
+        case 'shuf':
+            for (let i = sortedLines.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [sortedLines[i], sortedLines[j]] = [sortedLines[j], sortedLines[i]];
+            }
+            break;
+    }
+    setListSorterOutput(sortedLines.join('\n'));
+    toast({ title: "List Updated", description: "The list has been successfully sorted/shuffled." });
+  };
+  
+  // Case Converter
+  const handleConvertCase = (caseType: 'upper' | 'lower' | 'title' | 'sentence') => {
+    let text = caseConverterInput;
+    switch (caseType) {
+        case 'upper':
+            text = text.toUpperCase();
+            break;
+        case 'lower':
+            text = text.toLowerCase();
+            break;
+        case 'title':
+            text = text.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+            break;
+        case 'sentence':
+            text = text.toLowerCase().replace(/(^\w{1}|\.\s*\w{1})/g, char => char.toUpperCase());
+            break;
+    }
+    setCaseConverterOutput(text);
+  };
+  
+  // Character & Word Counter
+  const handleCounterUpdate = (text: string) => {
+    setCounterInput(text);
+    const words = text.match(/\b\w+\b/g) || [];
+    const chars = text.length;
+    const charsNoSpaces = text.replace(/\s/g, '').length;
+    const sentences = text.match(/[^.!?]+[.!?]+(\s|$)/g) || [];
+    const paragraphs = text.split(/\n+/).filter(p => p.trim() !== '');
+
+    setCounts({
+        words: words.length,
+        chars,
+        charsNoSpaces,
+        sentences: sentences.length,
+        paragraphs: paragraphs.length,
+    });
+  };
+  
+  // List Comparison
+  const handleCompareLists = () => {
+    const listALines = listA.split('\n').map(l => l.trim()).filter(Boolean);
+    const listBLines = listB.split('\n').map(l => l.trim()).filter(Boolean);
+
+    const setA = new Set(isCaseSensitiveComparison ? listALines : listALines.map(l => l.toLowerCase()));
+    const setB = new Set(isCaseSensitiveComparison ? listBLines : listBLines.map(l => l.toLowerCase()));
+    
+    const uniqueA = listALines.filter(item => !setB.has(isCaseSensitiveComparison ? item : item.toLowerCase()));
+    const uniqueB = listBLines.filter(item => !setA.has(isCaseSensitiveComparison ? item : item.toLowerCase()));
+    const inBoth = listALines.filter(item => setB.has(isCaseSensitiveComparison ? item : item.toLowerCase()));
+
+    setComparisonResult({ uniqueA, uniqueB, inBoth });
+    toast({ title: "Comparison Complete", description: "The lists have been successfully compared." });
+  };
+
+  // Duplicate Remover
+  const handleRemoveDuplicates = () => {
+      const lines = duplicateRemoverInput.split('\n');
+      const seen = new Set();
+      const uniqueLines: string[] = [];
+      
+      lines.forEach(line => {
+          const key = isCaseSensitiveRemover ? line.trim() : line.trim().toLowerCase();
+          if (key && !seen.has(key)) {
+              seen.add(key);
+              uniqueLines.push(line);
+          } else if (!key && !seen.has('')) { // Handle empty lines once
+              seen.add('');
+              uniqueLines.push(line);
+          }
+      });
+      
+      const removedCount = lines.length - uniqueLines.length;
+      setDuplicatesRemovedCount(removedCount);
+      setDuplicateRemoverOutput(uniqueLines.join('\n'));
+      toast({ title: "Duplicates Removed", description: `${removedCount} duplicate line(s) were removed.` });
+  };
 
 
   const renderToolContent = () => {
@@ -1841,6 +2320,136 @@ Like this one."
             </div>
         )
     }
+    if (activeTool === "phone-extractor") {
+      return (
+          <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  {/* Input Column */}
+                  <div className="space-y-4">
+                      <Label htmlFor="phone-extractor-input">Input Data</Label>
+                      <Textarea
+                          id="phone-extractor-input"
+                          placeholder="Paste text here, or upload a file to extract phone numbers from..."
+                          className="min-h-[300px] resize-y"
+                          value={phoneExtractorInput}
+                          onChange={(e) => setPhoneExtractorInput(e.target.value)}
+                      />
+                      <div className="flex flex-col sm:flex-row gap-2">
+                          <Button type="button" variant="outline" className="w-full" onClick={() => handlePaste(setPhoneExtractorInput)}>
+                              <ClipboardPaste className="mr-2 h-4 w-4" />
+                              Paste
+                          </Button>
+                           <div className="w-full">
+                              <Button
+                                  type="button"
+                                  variant="outline"
+                                  className="w-full"
+                                  onClick={() => phoneExtractorFileInputRef.current?.click()}
+                              >
+                                  <Upload className="mr-2 h-4 w-4" />
+                                  Upload File
+                              </Button>
+                              <input
+                                  type="file"
+                                  ref={phoneExtractorFileInputRef}
+                                  className="hidden"
+                                  accept=".txt,.csv,.xlsx,.xls"
+                                  onChange={handlePhoneExtractorFileUpload}
+                                  multiple
+                              />
+                              <p className="mt-1 text-center text-xs text-destructive">Supports .txt, .csv, .xls, and .xlsx files.</p>
+                          </div>
+                      </div>
+                      
+                      <Separator />
+
+                      <Button
+                          type="button"
+                          className="w-full"
+                          onClick={handleExtractPhones}
+                          disabled={!phoneExtractorInput}
+                      >
+                          <Phone className="mr-2 h-4 w-4" />
+                          Extract Phone Numbers
+                      </Button>
+                  </div>
+
+                  {/* Output Column */}
+                  <div className="space-y-4">
+                      <div>
+                          <div className="flex justify-between items-center mb-2">
+                              <Label htmlFor="phone-extractor-output">Unique Phone Numbers</Label>
+                              {uniquePhoneCount !== null && (
+                                  <span className="text-sm font-normal text-muted-foreground">
+                                      ({uniquePhoneCount} unique)
+                                  </span>
+                              )}
+                          </div>
+                          <Textarea
+                              id="phone-extractor-output"
+                              readOnly
+                              className="min-h-[150px] resize-y bg-muted/50"
+                              value={phoneExtractorOutput}
+                              placeholder="Unique phone numbers will appear here..."
+                          />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                              <Button
+                                  variant="outline"
+                                  className="w-full"
+                                  onClick={() => handleCopyOutput(phoneExtractorOutput)}
+                                  disabled={!phoneExtractorOutput}
+                              >
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  Copy List
+                              </Button>
+                              <div className="w-full">
+                                  <Button
+                                      variant="outline"
+                                      className="w-full"
+                                      onClick={() => promptDownload(phoneExtractorOutput, 'niazi-tools-unique-phones.txt')}
+                                      disabled={!phoneExtractorOutput}
+                                  >
+                                      <Download className="mr-2 h-4 w-4" />
+                                      Download List
+                                  </Button>
+                                  <p className="mt-1 text-center text-xs text-destructive">The output is downloaded as a .txt file.</p>
+                              </div>
+                          </div>
+                      </div>
+
+                      {extractedPhones && extractedPhones.length > 0 && (
+                          <div>
+                              <Separator className="my-4" />
+                              <div className="flex justify-between items-center mb-2">
+                                  <Label>Phone Number Counts</Label>
+                                  {totalPhoneCount !== null && (
+                                      <span className="text-sm font-normal text-muted-foreground">
+                                          ({totalPhoneCount} total)
+                                      </span>
+                                  )}
+                              </div>
+                              <ScrollArea className="h-[150px] w-full rounded-md border p-3 bg-muted/50">
+                                  <div className="space-y-2">
+                                      {extractedPhones.map(({ phone, count }) => (
+                                          <div key={phone} className="flex justify-between items-center text-sm gap-4">
+                                              <span className="truncate pr-2">{phone}</span>
+                                              <Badge variant="secondary" className="flex-shrink-0">{count}</Badge>
+                                          </div>
+                                      ))}
+                                  </div>
+                              </ScrollArea>
+                          </div>
+                      )}
+                      {extractedPhones?.length === 0 && (
+                           <div className="text-center text-muted-foreground mt-4 p-8 border rounded-lg bg-muted/50">
+                              <p>No phone numbers were found in the input text.</p>
+                          </div>
+                      )}
+                  </div>
+              </div>
+          </div>
+      )
+    }
     if (activeTool === "query-generator") {
       return (
           <div className="space-y-6">
@@ -1866,17 +2475,27 @@ Like this one."
                                   <SelectItem value="uk">United Kingdom</SelectItem>
                                   <SelectItem value="usa">United States</SelectItem>
                                   <SelectItem value="canada">Canada</SelectItem>
+                                  <SelectItem value="australia">Australia</SelectItem>
                               </SelectContent>
                           </Select>
+                           {['usa', 'canada', 'australia'].includes(queryCountry) && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Note: Generating queries for {queryCountry.toUpperCase()} may take a few moments as it fetches a large city list.
+                                </p>
+                            )}
                       </div>
                       <Button
                           type="button"
                           className="w-full"
                           onClick={handleGenerateQueries}
-                          disabled={!queryService.trim() || !queryCountry}
+                          disabled={!queryService.trim() || !queryCountry || isQueryGenerating}
                       >
-                          <FileSearch className="mr-2 h-4 w-4" />
-                          Generate Queries
+                          {isQueryGenerating ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                              <FileSearch className="mr-2 h-4 w-4" />
+                          )}
+                          {isQueryGenerating ? 'Generating...' : 'Generate Queries'}
                       </Button>
                   </div>
 
@@ -2153,7 +2772,7 @@ email2@example.com
                                 <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderSubjectsRef.current?.click()}>
                                   <Upload className="mr-2 h-4 w-4" /> Upload Subjects
                                 </Button>
-                                <input type="file" ref={campaignBuilderSubjectsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignFileUpload(e, 'subjects')} />
+                                <input type="file" ref={campaignBuilderSubjectsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignFileUpload(e, 'subjects')} multiple/>
                                 <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported. Each line is a subject.</p>
                             </div>
                         </CardContent>
@@ -2267,7 +2886,227 @@ email2@example.com
         </div>
     )
 }
+if (activeTool === 'list-sorter') {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div className="space-y-4">
+                <Label htmlFor="list-sorter-input">Input List</Label>
+                <Textarea
+                    id="list-sorter-input"
+                    placeholder="Paste your list here...
+Each line will be treated as an item."
+                    className="min-h-[300px] resize-y"
+                    value={listSorterInput}
+                    onChange={(e) => setListSorterInput(e.target.value)}
+                />
+                <Button type="button" variant="outline" className="w-full" onClick={() => handlePaste(setListSorterInput)}>
+                    <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                </Button>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <Button onClick={() => handleSortList('az')}>Sort A-Z</Button>
+                    <Button onClick={() => handleSortList('za')}>Sort Z-A</Button>
+                    <Button onClick={() => handleSortList('num')}>Sort Numeric</Button>
+                    <Button onClick={() => handleSortList('rev')}>Reverse</Button>
+                    <Button onClick={() => handleSortList('shuf')}>Shuffle</Button>
+                </div>
+            </div>
+            <div className="space-y-4">
+                <Label htmlFor="list-sorter-output">Output</Label>
+                <Textarea
+                    id="list-sorter-output"
+                    readOnly
+                    className="min-h-[300px] resize-y bg-muted/50"
+                    value={listSorterOutput}
+                    placeholder="Sorted list will appear here..."
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(listSorterOutput)} disabled={!listSorterOutput}>
+                        <Copy className="mr-2 h-4 w-4" /> Copy
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={() => promptDownload(listSorterOutput, 'niazi-tools-sorted-list.txt')} disabled={!listSorterOutput}>
+                        <Download className="mr-2 h-4 w-4" /> Download
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
+if (activeTool === 'case-converter') {
+    return (
+        <div className="space-y-6">
+            <Textarea
+                placeholder="Paste your text here to convert its case..."
+                className="min-h-[250px] resize-y"
+                value={caseConverterInput}
+                onChange={(e) => {
+                    setCaseConverterInput(e.target.value);
+                    setCaseConverterOutput('');
+                }}
+            />
+            <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="button" variant="outline" className="w-full" onClick={() => handlePaste(setCaseConverterInput)}>
+                    <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                </Button>
+                 <Button type="button" variant="outline" className="w-full" onClick={() => handleMoveOutputToInput(setCaseConverterInput, caseConverterOutput)}>
+                    <ArrowRightLeft className="mr-2 h-4 w-4" /> Move Output to Input
+                </Button>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                <Button onClick={() => handleConvertCase('upper')}>UPPERCASE</Button>
+                <Button onClick={() => handleConvertCase('lower')}>lowercase</Button>
+                <Button onClick={() => handleConvertCase('title')}>Title Case</Button>
+                <Button onClick={() => handleConvertCase('sentence')}>Sentence case</Button>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+                 <Label htmlFor="case-converter-output">Output</Label>
+                 <Textarea
+                    id="case-converter-output"
+                    readOnly
+                    className="min-h-[250px] resize-y bg-muted/50"
+                    value={caseConverterOutput}
+                    placeholder="Converted text will appear here..."
+                />
+            </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(caseConverterOutput)} disabled={!caseConverterOutput}>
+                    <Copy className="mr-2 h-4 w-4" /> Copy
+                </Button>
+                <Button variant="outline" className="w-full" onClick={() => promptDownload(caseConverterOutput, 'niazi-tools-case-converted.txt')} disabled={!caseConverterOutput}>
+                    <Download className="mr-2 h-4 w-4" /> Download
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+if (activeTool === 'counter') {
+    return (
+        <div className="space-y-6">
+            <Textarea
+                placeholder="Paste or type your text here to get statistics..."
+                className="min-h-[300px] resize-y"
+                value={counterInput}
+                onChange={(e) => handleCounterUpdate(e.target.value)}
+            />
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-center">
+                <Card>
+                    <CardHeader><CardTitle>{counts.words}</CardTitle></CardHeader>
+                    <CardContent><CardDescription>Words</CardDescription></CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>{counts.chars}</CardTitle></CardHeader>
+                    <CardContent><CardDescription>Characters</CardDescription></CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>{counts.charsNoSpaces}</CardTitle></CardHeader>
+                    <CardContent><CardDescription>No Spaces</CardDescription></CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>{counts.sentences}</CardTitle></CardHeader>
+                    <CardContent><CardDescription>Sentences</CardDescription></CardContent>
+                </Card>
+                <Card>
+                    <CardHeader><CardTitle>{counts.paragraphs}</CardTitle></CardHeader>
+                    <CardContent><CardDescription>Paragraphs</CardDescription></CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+}
+
+if (activeTool === 'list-comparison') {
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="space-y-2">
+                    <Label htmlFor="list-a">List A</Label>
+                    <Textarea id="list-a" value={listA} onChange={(e) => setListA(e.target.value)} className="min-h-[250px]" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="list-b">List B</Label>
+                    <Textarea id="list-b" value={listB} onChange={(e) => setListB(e.target.value)} className="min-h-[250px]" />
+                </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <Button className="w-full sm:w-auto" onClick={handleCompareLists} disabled={!listA || !listB}>
+                    Compare Lists
+                </Button>
+                 <div className="flex items-center space-x-2">
+                    <input type="checkbox" id="case-sensitive-compare" checked={isCaseSensitiveComparison} onChange={(e) => setIsCaseSensitiveComparison(e.target.checked)} className="h-4 w-4" />
+                    <Label htmlFor="case-sensitive-compare">Case-sensitive</Label>
+                </div>
+            </div>
+            {comparisonResult && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                        <Label>Unique to List A ({comparisonResult.uniqueA.length})</Label>
+                        <Textarea readOnly value={comparisonResult.uniqueA.join('\n')} className="min-h-[200px] bg-muted/50" />
+                        <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(comparisonResult.uniqueA.join('\n'))}>Copy</Button>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>In Both Lists ({comparisonResult.inBoth.length})</Label>
+                        <Textarea readOnly value={comparisonResult.inBoth.join('\n')} className="min-h-[200px] bg-muted/50" />
+                        <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(comparisonResult.inBoth.join('\n'))}>Copy</Button>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Unique to List B ({comparisonResult.uniqueB.length})</Label>
+                        <Textarea readOnly value={comparisonResult.uniqueB.join('\n')} className="min-h-[200px] bg-muted/50" />
+                        <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(comparisonResult.uniqueB.join('\n'))}>Copy</Button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+if (activeTool === 'duplicate-remover') {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div className="space-y-4">
+                <Label htmlFor="duplicate-input">Input List</Label>
+                <Textarea
+                    id="duplicate-input"
+                    placeholder="Paste your list here to remove duplicates..."
+                    className="min-h-[300px] resize-y"
+                    value={duplicateRemoverInput}
+                    onChange={(e) => setDuplicateRemoverInput(e.target.value)}
+                />
+                 <div className="flex items-center space-x-2">
+                    <input type="checkbox" id="case-sensitive-remover" checked={isCaseSensitiveRemover} onChange={(e) => setIsCaseSensitiveRemover(e.target.checked)} className="h-4 w-4" />
+                    <Label htmlFor="case-sensitive-remover">Case-sensitive</Label>
+                </div>
+                <Button className="w-full" onClick={handleRemoveDuplicates} disabled={!duplicateRemoverInput}>
+                    Remove Duplicates
+                </Button>
+            </div>
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <Label htmlFor="duplicate-output">Unique List</Label>
+                    {duplicatesRemovedCount !== null && (
+                        <span className="text-sm text-muted-foreground">{duplicatesRemovedCount} removed</span>
+                    )}
+                </div>
+                <Textarea
+                    id="duplicate-output"
+                    readOnly
+                    className="min-h-[300px] resize-y bg-muted/50"
+                    value={duplicateRemoverOutput}
+                    placeholder="Unique list will appear here..."
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(duplicateRemoverOutput)} disabled={!duplicateRemoverOutput}>
+                        <Copy className="mr-2 h-4 w-4" /> Copy
+                    </Button>
+                    <Button variant="outline" className="w-full" onClick={() => promptDownload(duplicateRemoverOutput, 'niazi-tools-unique-list.txt')} disabled={!duplicateRemoverOutput}>
+                        <Download className="mr-2 h-4 w-4" /> Download
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
     return null;
   };
@@ -2501,10 +3340,16 @@ email2@example.com
     if (activeTool === "copyable-paragraphs") return "Copyable Paragraphs";
     if (activeTool === "find-replace") return "Find & Replace";
     if (activeTool === "data-extractor") return "Email Extractor";
+    if (activeTool === "phone-extractor") return "Phone Number Extractor";
     if (activeTool === "query-generator") return "Query Generator";
     if (activeTool === "time-interval-generator") return "Time Interval Generator";
     if (activeTool === "line-repeater") return "Line Repeater";
     if (activeTool === "campaign-builder") return "Email Campaign Builder";
+    if (activeTool === "list-sorter") return "List Sorter & Randomizer";
+    if (activeTool === "case-converter") return "Case Converter";
+    if (activeTool === "counter") return "Character & Word Counter";
+    if (activeTool === "list-comparison") return "List Comparison Tool";
+    if (activeTool === "duplicate-remover") return "Duplicate Line Remover";
     return "";
   };
 
@@ -2513,10 +3358,16 @@ email2@example.com
     if (activeTool === "copyable-paragraphs") return "Add or upload distinct blocks of text to create a list of copyable paragraphs.";
     if (activeTool === "find-replace") return "Perform powerful find and replace operations on your text with multiple rules at once.";
     if (activeTool === "data-extractor") return "Quickly extract all unique email addresses from large blocks of text or uploaded files.";
+    if (activeTool === "phone-extractor") return "Extract phone numbers from text and Excel files with high precision.";
     if (activeTool === "query-generator") return "Generate location-based search queries for marketing and research.";
     if (activeTool === "time-interval-generator") return "Quickly generate a list of time entries for schedules, logs, or planning.";
     if (activeTool === "line-repeater") return "Repeat a single line of text multiple times to generate a large list.";
     if (activeTool === "campaign-builder") return "Assemble structured data for email campaigns from multiple dynamic inputs.";
+    if (activeTool === "list-sorter") return "Sort, reverse, or shuffle your lists alphabetically or numerically.";
+    if (activeTool === "case-converter") return "Quickly convert text between different capitalization formats.";
+    if (activeTool === "counter") return "Get real-time counts of words, characters, sentences, and paragraphs.";
+    if (activeTool === "list-comparison") return "Compare two lists to find unique items and common entries.";
+    if (activeTool === "duplicate-remover") return "Clean up your lists by removing all duplicate lines.";
     return "";
   };
 
@@ -2669,7 +3520,7 @@ email2@example.com
                   Select a tool below to get started.
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in-50 zoom-in-95 duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-50 zoom-in-95 duration-500">
                 <ToolCard
                   icon={<Copy className="h-8 w-8 text-primary" />}
                   title="Copyable Lines"
@@ -2693,6 +3544,13 @@ email2@example.com
                   title="Email Extractor"
                   description="Extract all email addresses from text or files."
                   onClick={() => setActiveTool("data-extractor")}
+                />
+                 <ToolCard
+                  icon={<Phone className="h-8 w-8 text-primary" />}
+                  title="Phone Number Extractor"
+                  description="Extract phone numbers from text and Excel files."
+                  onClick={() => setActiveTool("phone-extractor")}
+                  isNew
                 />
                 <ToolCard
                   icon={<MapPin className="h-8 w-8 text-primary" />}
@@ -2719,6 +3577,41 @@ email2@example.com
                   title="Email Campaign Builder"
                   description="Assemble campaign data from multiple inputs."
                   onClick={() => setActiveTool("campaign-builder")}
+                  isNew
+                />
+                 <ToolCard
+                  icon={<ListOrdered className="h-8 w-8 text-primary" />}
+                  title="List Sorter & Randomizer"
+                  description="Sort, reverse, or shuffle lists of text instantly."
+                  onClick={() => setActiveTool("list-sorter")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<CaseSensitive className="h-8 w-8 text-primary" />}
+                  title="Case Converter"
+                  description="Change text to UPPERCASE, lowercase, and more."
+                  onClick={() => setActiveTool("case-converter")}
+                  isNew
+                />
+                 <ToolCard
+                  icon={<Calculator className="h-8 w-8 text-primary" />}
+                  title="Character & Word Counter"
+                  description="Get real-time counts for text statistics."
+                  onClick={() => setActiveTool("counter")}
+                  isNew
+                />
+                 <ToolCard
+                  icon={<Diff className="h-8 w-8 text-primary" />}
+                  title="List Comparison"
+                  description="Find differences and similarities between two lists."
+                  onClick={() => setActiveTool("list-comparison")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<Eraser className="h-8 w-8 text-primary" />}
+                  title="Duplicate Line Remover"
+                  description="Clean up lists by removing duplicate entries."
+                  onClick={() => setActiveTool("duplicate-remover")}
                   isNew
                 />
               </div>

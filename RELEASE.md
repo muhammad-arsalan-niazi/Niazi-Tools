@@ -1,51 +1,37 @@
-# Release Notes - v2.0.0
+# Release Notes - v3.0.0
 
-This major update introduces three powerful new tools, significant enhancements to existing utilities, and a host of UI/UX improvements to make Niazi Tools more flexible, intuitive, and efficient.
+This is a landmark update for Niazi Tools, introducing **five powerful new utilities** focused on advanced list manipulation and text analysis. This release significantly expands the app's capabilities, making it an even more indispensable part of your data processing workflow.
 
-## 🚀 New Features
+## 🚀 New Features: The Data-Wrangler's Toolkit
 
-### 1. ✨ **New Tool: Time Interval Generator**
-- Quickly generate a list of time entries based on a start time, interval (in minutes), and total count.
-- Ideal for creating schedules, event timelines, and logs.
-- Supports generating very large lists for direct download, preventing browser slowdowns.
+We've added a whole new category of tools designed to help you clean, organize, and analyze your lists and text data with ease.
 
-### 2. ✨ **New Tool: Line Repeater**
-- Repeat a single line of text thousands of times.
-- Perfect for creating test data, populating spreadsheets, or generating bulk lists.
-- Includes a direct download option for large-scale generation.
+### 1. ✨ **New Tool: List Sorter & Randomizer**
+-   **Sort Your Way:** Instantly sort any list of text alphabetically (A-Z, Z-A) or numerically.
+-   **Shuffle It Up:** Randomize the order of your list with a single click, perfect for creating random assignments or contest drawings.
+-   **Reverse Order:** Quickly flip the order of any list.
 
-### 3. ✨ **New Tool: Email Campaign Builder**
-- A sophisticated utility for assembling email campaign data.
-- Combine a list of emails with rotating subjects and paragraphs.
-- Automatically generates timed sending slots based on your defined interval.
-- Output is presented in individually copyable and editable fields (Email, Subject, Paragraph, Time) for a streamlined workflow with any email client.
-- Smart handling for large email lists, with a confirmation dialog for lists over 100 entries.
+### 2. ✨ **New Tool: Case Converter**
+-   **Total Control Over Casing:** Paste any text and convert it to UPPERCASE, lowercase, Title Case (e.g., `The Quick Brown Fox`), or Sentence case.
+-   **Streamline Your Writing:** An essential utility for writers, marketers, and developers who need to ensure consistent formatting.
 
-## 🌟 Enhancements
+### 3. ✨ **New Tool: Character & Word Counter**
+-   **Real-Time Statistics:** Get instant feedback as you type.
+-   **Comprehensive Analysis:** The tool counts everything: characters (with and without spaces), words, sentences, and even paragraphs.
 
-### **Copyable Paragraphs Tool Overhaul**
-- Now supports adding up to 10 distinct paragraph fields manually.
-- Allows for bulk uploading of multiple `.txt` files, where each file's content is treated as a separate paragraph.
-- Original formatting, including line breaks and spacing, is fully preserved.
+### 4. ✨ **New Tool: List Comparison**
+-   **Find What's Changed:** Compare two lists side-by-side to see what's different and what's the same.
+-   **Detailed Output:** The tool clearly shows you:
+    -   Items that are unique to List A.
+    -   Items that are unique to List B.
+    -   Items that appear in both lists.
+-   **Case-Sensitive Option:** Includes an option for case-sensitive comparison for more precise data analysis.
 
-### **Email Extractor Improvements**
-- Can now process multiple file uploads at once (.txt, .csv, .xls, .xlsx).
-- Intelligently detects and prioritizes columns with "Email" headers in Excel files for more accurate extraction.
+### 5. ✨ **New Tool: Duplicate Line Remover**
+-   **Clean Your Data Instantly:** Paste any list and immediately get a clean version with all duplicate entries removed.
+-   **Preserves Order:** The tool keeps the first occurrence of each unique line, maintaining the original structure of your data.
+-   **Case-Sensitive Control:** Choose whether the duplicate check is case-sensitive or not.
 
-### **Find & Replace Enhancements**
-- You can now add up to 10 find-and-replace rule pairs simultaneously.
-- Undo your last replacement with a single click.
-
-## 🎨 UI/UX Improvements
-
-- **Global Scroll-to-Top Button:** A new button appears in the bottom-right corner when scrolling, allowing for quick navigation back to the top of the page.
-- **Global "Start Over" Button:** Each tool now features a "Start Over" button at the top for quickly clearing inputs and outputs.
-- **Improved File Uploads:** All file upload buttons now include helper text specifying the supported file types.
-- **Refined Dialogs:** New and improved dialogs for nickname entry, large file downloads, and email list limits provide a clearer, more user-friendly experience.
-- **Responsive Design:** Enhanced styling to ensure all tool outputs, especially the multi-field Campaign Builder, are fully viewable and functional on mobile and tablet devices.
-
-## 🐛 Bug Fixes
-
-- Fixed an issue where the "Mark as copied" feature was not working correctly in the Campaign Builder.
-- Resolved a hydration error related to server/client rendering mismatches.
-- Corrected various minor styling and layout inconsistencies.
+## 🎨 UI/UX Enhancements
+-   The main dashboard has been updated to include cards for all five new tools, each with a unique icon and clear description.
+-   Each new tool features the same intuitive, user-friendly interface you expect from Niazi Tools, including "Start Over," "Copy Output," and "Download" functionality.
