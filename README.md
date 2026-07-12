@@ -1,4 +1,5 @@
-# Niazi Tools - Your All-in-One Text & Data Utility Suite
+# Niazi Tools - Version 4.0.0
+A comprehensive collection of free online tools for text processing, data extraction, formatting, and conversion.
 
 Welcome to **Niazi Tools**, a powerful and privacy-focused web application designed to streamline your daily text and data processing tasks. Built with modern technology, this app offers a suite of free, offline-first utilities that work entirely in your browser. Your data is never sent to any server, ensuring complete privacy.
 
@@ -55,6 +56,18 @@ Compare two lists to find what's unique and what they share. This tool is perfec
 
 ### 14. 🗑️ Duplicate Line Remover
 Quickly clean up any list by removing all duplicate lines. This tool leaves you with a clean list of only the unique entries.
+
+### 15. 🔗 URL Extractor
+Extract all valid URLs from any block of text. This tool scan through any unstructured text and neatly compiles all web addresses, allowing you to instantly copy or export the list of URLs.
+
+### 16. 🔢 Base64 Converter
+Encode standard plain text into Base64 format or decode Base64 encoded strings back to readable text with complete offline safety.
+
+### 17. 📝 Markdown to HTML
+Convert standard Markdown text into raw HTML tags. This makes it incredibly easy to format posts, write docs, or draft blogs and get clean HTML code instantly.
+
+### 18. 🧼 Whitespace Remover
+Clean up your text by removing extra spaces between words, reducing double spaces, and stripping out blank lines. Ideal for cleaning up raw data and code files.
 
 ## 🚀 Technology Stack
 

@@ -44,6 +44,10 @@ import {
   Diff,
   Eraser,
   Phone,
+  Link,
+  Binary,
+  Code,
+  AlignLeft,
 } from "lucide-react";
 import * as XLSX from 'xlsx';
 
@@ -134,6 +138,10 @@ type ActiveTool =
   "counter" |
   "list-comparison" |
   "duplicate-remover" |
+  "url-extractor" |
+  "base64-converter" |
+  "markdown-converter" |
+  "whitespace-remover" |
   null;
 
 type ExtractedDataItem = {
@@ -306,11 +314,11 @@ const toolHelpContent = {
       faqs: [
           {
               question: "How many emails can I use? 🤔",
-              answer: "You can provide any number of emails. If you provide more than 100, a confirmation dialog will appear, and only the first 100 will be used for generation. Subjects, paragraphs, and times will be automatically matched to the number of emails you use."
+              answer: "You can provide any number of emails. If you provide more than 250, a confirmation dialog will appear, and only the first 250 will be used for generation. Subjects, paragraphs, and times will be automatically matched to the number of emails you use."
           },
           {
               question: "How do the subjects and paragraphs work? 📋",
-              answer: "You can add up to 10 different subjects and 10 different paragraphs. The tool will cycle through them to create a varied campaign. For example, if you have 2 subjects, it will assign them as A, B, A, B, etc."
+              answer: "You can add up to 250 different subjects and 250 different paragraphs. The tool will cycle through them to create a varied campaign. For example, if you have 2 subjects, it will assign them as A, B, A, B, etc."
           },
           {
               question: "Why must the number of subjects and paragraphs be equal? ⚖️",
@@ -404,6 +412,58 @@ const toolHelpContent = {
             {
                 question: "Will the original order be preserved? ➡️",
                 answer: "Yes. The tool keeps the first occurrence of each unique line and preserves its original position in the list."
+            }
+        ]
+    },
+    'url-extractor': {
+        description: "Extract all valid URLs from a block of text. Great for parsing links from articles, code, or mixed documents.",
+        faqs: [
+            {
+                question: "What format of URLs does it find? 🌐",
+                answer: "It finds any standard URL starting with http:// or https://. It does not extract domains without the protocol."
+            },
+            {
+                question: "Will it find duplicate URLs? 🤔",
+                answer: "No, this tool automatically removes duplicate URLs so you only get a clean list of unique links."
+            }
+        ]
+    },
+    'base64-converter': {
+        description: "Encode regular text to Base64 or decode Base64 strings back into readable text.",
+        faqs: [
+            {
+                question: "What is Base64? 🔢",
+                answer: "Base64 is an encoding scheme used to convert binary data (or text) into an ASCII string format. It's commonly used in data transfer and simple obfuscation."
+            },
+            {
+                question: "Can it handle special characters? ✍️",
+                answer: "Yes, the tool properly encodes and decodes UTF-8 characters and emojis."
+            }
+        ]
+    },
+    'markdown-converter': {
+        description: "Quickly convert standard Markdown text into raw HTML tags. Perfect for embedding formatted text into web pages or emails.",
+        faqs: [
+            {
+                question: "What markdown features are supported? 📝",
+                answer: "It supports basic markdown features like headings (#), bold (**), italic (*), blockquotes (>), links, and images."
+            },
+            {
+                question: "Does it format complex tables? 📊",
+                answer: "No, this is a lightweight tool for quick conversion of basic text formatting elements."
+            }
+        ]
+    },
+    'whitespace-remover': {
+        description: "Clean up your text by removing extra spaces between words and eliminating empty lines.",
+        faqs: [
+            {
+                question: "Does it remove all spaces? 🤔",
+                answer: "No, it reduces multiple consecutive spaces into a single space, maintaining standard word separation."
+            },
+            {
+                question: "What happens to line breaks? ➡️",
+                answer: "Standard line breaks are preserved, but multiple consecutive empty lines are completely removed."
             }
         ]
     }
@@ -602,6 +662,24 @@ export default function Home() {
   const [duplicateRemoverOutput, setDuplicateRemoverOutput] = useState('');
   const [isCaseSensitiveRemover, setIsCaseSensitiveRemover] = useState(false);
   const [duplicatesRemovedCount, setDuplicatesRemovedCount] = useState<number | null>(null);
+
+  // URL Extractor
+  const [urlExtractorInput, setUrlExtractorInput] = useState('');
+  const [urlExtractorOutput, setUrlExtractorOutput] = useState('');
+  const [urlExtractorCount, setUrlExtractorCount] = useState<number | null>(null);
+
+  // Base64 Converter
+  const [base64Input, setBase64Input] = useState('');
+  const [base64Output, setBase64Output] = useState('');
+  const [base64Mode, setBase64Mode] = useState<'encode' | 'decode'>('encode');
+
+  // Markdown Converter
+  const [markdownInput, setMarkdownInput] = useState('');
+  const [markdownOutput, setMarkdownOutput] = useState('');
+
+  // Whitespace Remover
+  const [whitespaceInput, setWhitespaceInput] = useState('');
+  const [whitespaceOutput, setWhitespaceOutput] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -804,6 +882,7 @@ export default function Home() {
             });
         })
         .catch(error => {
+            console.error("Failed to read paragraph files:", error);
             toast({
                 title: "Error Reading Files",
                 description: "There was an issue processing one or more of your files.",
@@ -1516,7 +1595,7 @@ export default function Home() {
 
   // --- Campaign Builder ---
   const handleAddDynamicPair = (setter: React.Dispatch<React.SetStateAction<DynamicPair[]>>, pairs: DynamicPair[]) => {
-    if (pairs.length < 10) {
+    if (pairs.length < 250) {
       setter([...pairs, { id: Date.now(), value: "" }]);
     }
   };
@@ -1569,8 +1648,15 @@ export default function Home() {
             
             setCampaignSubjects(prev => {
               const existingNonEmpty = prev.filter(p => p.value.trim());
-              const combined = [...existingNonEmpty, ...newPairs].slice(0, 10);
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 250);
               return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+        }).catch(err => {
+            console.error("Failed to read campaign subjects files:", err);
+            toast({
+                title: "Error Reading Files",
+                description: "There was an issue processing one or more of your subject files.",
+                variant: "destructive",
             });
         });
     } else if (field === 'paragraphs') {
@@ -1598,8 +1684,15 @@ export default function Home() {
             
             setCampaignParagraphs(prev => {
               const existingNonEmpty = prev.filter(p => p.value.trim());
-              const combined = [...existingNonEmpty, ...newPairs].slice(0, 10);
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 250);
               return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+        }).catch(err => {
+            console.error("Failed to read campaign paragraphs files:", err);
+            toast({
+                title: "Error Reading Files",
+                description: "There was an issue processing one or more of your paragraph files.",
+                variant: "destructive",
             });
         });
     }
@@ -1608,7 +1701,7 @@ export default function Home() {
   };
   
   const proceedToGenerateCampaign = () => {
-    const emails = campaignEmails.split('\n').map(e => e.trim()).filter(Boolean).slice(0, 100);
+    const emails = campaignEmails.split('\n').map(e => e.trim()).filter(Boolean).slice(0, 250);
     const subjects = campaignSubjects.map(s => s.value.trim()).filter(Boolean);
     const paragraphs = campaignParagraphs.map(p => p.value.trim()).filter(Boolean);
 
@@ -1653,7 +1746,7 @@ export default function Home() {
 
   const handleGenerateCampaign = () => {
     const emailList = campaignEmails.split('\n').map(e => e.trim()).filter(Boolean);
-    if (emailList.length > 100) {
+    if (emailList.length > 250) {
       setEmailLimitInfo({
         count: emailList.length,
         onConfirm: () => {
@@ -1866,6 +1959,66 @@ export default function Home() {
       setDuplicatesRemovedCount(removedCount);
       setDuplicateRemoverOutput(uniqueLines.join('\n'));
       toast({ title: "Duplicates Removed", description: `${removedCount} duplicate line(s) were removed.` });
+  };
+
+  // URL Extractor
+  const handleExtractUrls = () => {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const urls = urlExtractorInput.match(urlRegex) || [];
+      const uniqueUrls = Array.from(new Set(urls));
+      setUrlExtractorCount(uniqueUrls.length);
+      setUrlExtractorOutput(uniqueUrls.join('\n'));
+      if (uniqueUrls.length === 0) {
+          toast({ title: "No URLs Found", description: "Could not find any valid URLs in the text.", variant: "destructive" });
+      } else {
+          toast({ title: "Extraction Complete", description: `Found ${uniqueUrls.length} unique URL(s).` });
+      }
+  };
+
+  // Base64 Converter
+  const handleBase64Convert = () => {
+      try {
+          if (base64Mode === 'encode') {
+              setBase64Output(btoa(unescape(encodeURIComponent(base64Input))));
+              toast({ title: "Encoded", description: "Text successfully encoded to Base64." });
+          } else {
+              setBase64Output(decodeURIComponent(escape(atob(base64Input.trim()))));
+              toast({ title: "Decoded", description: "Base64 successfully decoded to text." });
+          }
+      } catch (err) {
+          toast({ title: "Conversion Error", description: "Invalid input for the selected conversion.", variant: "destructive" });
+      }
+  };
+
+  // Markdown Converter
+  const handleMarkdownConvert = () => {
+      // Basic markdown to HTML conversion for common tags
+      let html = markdownInput
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+          .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
+          .replace(/\*\*(.*)\*\*/gim, '<b>$1</b>')
+          .replace(/\*(.*)\*/gim, '<i>$1</i>')
+          .replace(/!\[(.*?)\]\((.*?)\)/gim, "<img alt='$1' src='$2' />")
+          .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
+          .replace(/\n$/gim, '<br />');
+
+      setMarkdownOutput(html);
+      toast({ title: "Converted", description: "Markdown successfully converted to HTML." });
+  };
+
+  // Whitespace Remover
+  const handleRemoveWhitespace = () => {
+      // Removes extra spaces between words and empty lines
+      const cleaned = whitespaceInput
+          .split('\n')
+          .map(line => line.trim().replace(/\s{2,}/g, ' '))
+          .filter(line => line.length > 0)
+          .join('\n');
+      
+      setWhitespaceOutput(cleaned);
+      toast({ title: "Cleaned", description: "Extra whitespace and empty lines removed." });
   };
 
 
@@ -2713,7 +2866,7 @@ Like this one."
                     <Card>
                         <CardHeader>
                             <CardTitle>1. Emails</CardTitle>
-                            <CardDescription>Paste or upload emails. If more than 100 are provided, only the first 100 will be used.</CardDescription>
+                            <CardDescription>Paste or upload emails. If more than 250 are provided, only the first 250 will be used.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                              <Textarea
@@ -2743,7 +2896,7 @@ email2@example.com
                     <Card>
                          <CardHeader>
                             <CardTitle>2. Subjects</CardTitle>
-                            <CardDescription>Add up to 10 subject lines to rotate through.</CardDescription>
+                            <CardDescription>Add up to 250 subject lines to rotate through.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                            <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
@@ -2763,7 +2916,7 @@ email2@example.com
                                     </div>
                                 ))}
                             </div>
-                            {campaignSubjects.length < 10 && (
+                            {campaignSubjects.length < 250 && (
                                 <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignSubjects, campaignSubjects)}>
                                     <PlusCircle className="mr-2 h-4 w-4"/> Add Subject
                                 </Button>
@@ -2805,7 +2958,7 @@ email2@example.com
                                     </div>
                                 ))}
                             </div>
-                            {campaignParagraphs.length < 10 && (
+                            {campaignParagraphs.length < 250 && (
                                 <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignParagraphs, campaignParagraphs)}>
                                     <PlusCircle className="mr-2 h-4 w-4"/> Add Paragraph
                                 </Button>
@@ -3108,6 +3261,189 @@ if (activeTool === 'duplicate-remover') {
     );
 }
 
+    if (activeTool === 'url-extractor') {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="space-y-4">
+                    <Label htmlFor="url-extractor-input">Input Text</Label>
+                    <Textarea
+                        id="url-extractor-input"
+                        placeholder="Paste text containing URLs..."
+                        className="min-h-[300px] resize-y"
+                        value={urlExtractorInput}
+                        onChange={(e) => setUrlExtractorInput(e.target.value)}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={() => handlePaste(setUrlExtractorInput)}>
+                            <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                        </Button>
+                        <Button className="w-full" onClick={handleExtractUrls} disabled={!urlExtractorInput}>
+                            Extract URLs
+                        </Button>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <Label htmlFor="url-extractor-output">Extracted URLs</Label>
+                        {urlExtractorCount !== null && (
+                            <span className="text-sm text-muted-foreground">{urlExtractorCount} found</span>
+                        )}
+                    </div>
+                    <Textarea
+                        id="url-extractor-output"
+                        readOnly
+                        className="min-h-[300px] resize-y bg-muted/50"
+                        value={urlExtractorOutput}
+                        placeholder="Extracted URLs will appear here..."
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(urlExtractorOutput)} disabled={!urlExtractorOutput}>
+                            <Copy className="mr-2 h-4 w-4" /> Copy
+                        </Button>
+                        <Button variant="outline" className="w-full" onClick={() => promptDownload(urlExtractorOutput, 'extracted-urls.txt')} disabled={!urlExtractorOutput}>
+                            <Download className="mr-2 h-4 w-4" /> Download
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (activeTool === 'base64-converter') {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <Label htmlFor="base64-input">Input</Label>
+                        <div className="flex gap-2">
+                            <Button size="sm" variant={base64Mode === 'encode' ? 'default' : 'outline'} onClick={() => setBase64Mode('encode')}>Encode</Button>
+                            <Button size="sm" variant={base64Mode === 'decode' ? 'default' : 'outline'} onClick={() => setBase64Mode('decode')}>Decode</Button>
+                        </div>
+                    </div>
+                    <Textarea
+                        id="base64-input"
+                        placeholder={base64Mode === 'encode' ? "Enter text to encode to Base64..." : "Enter Base64 to decode..."}
+                        className="min-h-[300px] resize-y"
+                        value={base64Input}
+                        onChange={(e) => setBase64Input(e.target.value)}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={() => handlePaste(setBase64Input)}>
+                            <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                        </Button>
+                        <Button className="w-full" onClick={handleBase64Convert} disabled={!base64Input}>
+                            {base64Mode === 'encode' ? 'Encode to Base64' : 'Decode Base64'}
+                        </Button>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <Label htmlFor="base64-output">Output</Label>
+                    <Textarea
+                        id="base64-output"
+                        readOnly
+                        className="min-h-[300px] resize-y bg-muted/50"
+                        value={base64Output}
+                        placeholder="Result will appear here..."
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(base64Output)} disabled={!base64Output}>
+                            <Copy className="mr-2 h-4 w-4" /> Copy
+                        </Button>
+                        <Button variant="outline" className="w-full" onClick={() => handleMoveOutputToInput(setBase64Input, base64Output)} disabled={!base64Output}>
+                            <ArrowRightLeft className="mr-2 h-4 w-4" /> Move to Input
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (activeTool === 'markdown-converter') {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="space-y-4">
+                    <Label htmlFor="markdown-input">Markdown Input</Label>
+                    <Textarea
+                        id="markdown-input"
+                        placeholder="Type or paste Markdown here..."
+                        className="min-h-[300px] resize-y font-mono"
+                        value={markdownInput}
+                        onChange={(e) => setMarkdownInput(e.target.value)}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={() => handlePaste(setMarkdownInput)}>
+                            <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                        </Button>
+                        <Button className="w-full" onClick={handleMarkdownConvert} disabled={!markdownInput}>
+                            Convert to HTML
+                        </Button>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <Label htmlFor="markdown-output">HTML Output</Label>
+                    <Textarea
+                        id="markdown-output"
+                        readOnly
+                        className="min-h-[300px] resize-y font-mono bg-muted/50"
+                        value={markdownOutput}
+                        placeholder="HTML output will appear here..."
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(markdownOutput)} disabled={!markdownOutput}>
+                            <Copy className="mr-2 h-4 w-4" /> Copy HTML
+                        </Button>
+                        <Button variant="outline" className="w-full" onClick={() => promptDownload(markdownOutput, 'converted.html')} disabled={!markdownOutput}>
+                            <Download className="mr-2 h-4 w-4" /> Download HTML
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (activeTool === 'whitespace-remover') {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div className="space-y-4">
+                    <Label htmlFor="whitespace-input">Input Text</Label>
+                    <Textarea
+                        id="whitespace-input"
+                        placeholder="Paste text with extra whitespace..."
+                        className="min-h-[300px] resize-y"
+                        value={whitespaceInput}
+                        onChange={(e) => setWhitespaceInput(e.target.value)}
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={() => handlePaste(setWhitespaceInput)}>
+                            <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                        </Button>
+                        <Button className="w-full" onClick={handleRemoveWhitespace} disabled={!whitespaceInput}>
+                            Remove Whitespace
+                        </Button>
+                    </div>
+                </div>
+                <div className="space-y-4">
+                    <Label htmlFor="whitespace-output">Cleaned Text</Label>
+                    <Textarea
+                        id="whitespace-output"
+                        readOnly
+                        className="min-h-[300px] resize-y bg-muted/50"
+                        value={whitespaceOutput}
+                        placeholder="Cleaned text will appear here..."
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={() => handleCopyOutput(whitespaceOutput)} disabled={!whitespaceOutput}>
+                            <Copy className="mr-2 h-4 w-4" /> Copy
+                        </Button>
+                        <Button variant="outline" className="w-full" onClick={() => handleMoveOutputToInput(setWhitespaceInput, whitespaceOutput)} disabled={!whitespaceOutput}>
+                            <ArrowRightLeft className="mr-2 h-4 w-4" /> Move to Input
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return null;
   };
 
@@ -3350,6 +3686,10 @@ if (activeTool === 'duplicate-remover') {
     if (activeTool === "counter") return "Character & Word Counter";
     if (activeTool === "list-comparison") return "List Comparison Tool";
     if (activeTool === "duplicate-remover") return "Duplicate Line Remover";
+    if (activeTool === "url-extractor") return "URL Extractor";
+    if (activeTool === "base64-converter") return "Base64 Converter";
+    if (activeTool === "markdown-converter") return "Markdown to HTML";
+    if (activeTool === "whitespace-remover") return "Whitespace Remover";
     return "";
   };
 
@@ -3368,6 +3708,10 @@ if (activeTool === 'duplicate-remover') {
     if (activeTool === "counter") return "Get real-time counts of words, characters, sentences, and paragraphs.";
     if (activeTool === "list-comparison") return "Compare two lists to find unique items and common entries.";
     if (activeTool === "duplicate-remover") return "Clean up your lists by removing all duplicate lines.";
+    if (activeTool === "url-extractor") return "Extract all valid URLs from any text.";
+    if (activeTool === "base64-converter") return "Encode to or decode from Base64 format.";
+    if (activeTool === "markdown-converter") return "Convert standard Markdown text into HTML tags.";
+    if (activeTool === "whitespace-remover") return "Remove extra spaces between words and empty lines.";
     return "";
   };
 
@@ -3438,7 +3782,7 @@ if (activeTool === 'duplicate-remover') {
             <AlertDialogHeader>
               <AlertDialogTitle>Email Limit Exceeded</AlertDialogTitle>
               <AlertDialogDescription>
-                You provided {emailLimitInfo?.count} emails. This tool will use the first 100 entries to generate the campaign. Do you want to continue?
+                You provided {emailLimitInfo?.count} emails. This tool will use the first 250 entries to generate the campaign. Do you want to continue?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -3612,6 +3956,34 @@ if (activeTool === 'duplicate-remover') {
                   title="Duplicate Line Remover"
                   description="Clean up lists by removing duplicate entries."
                   onClick={() => setActiveTool("duplicate-remover")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<Link className="h-8 w-8 text-primary" />}
+                  title="URL Extractor"
+                  description="Extract all valid URLs from any text."
+                  onClick={() => setActiveTool("url-extractor")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<Binary className="h-8 w-8 text-primary" />}
+                  title="Base64 Converter"
+                  description="Encode to or decode from Base64."
+                  onClick={() => setActiveTool("base64-converter")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<Code className="h-8 w-8 text-primary" />}
+                  title="Markdown to HTML"
+                  description="Convert standard Markdown text into raw HTML tags."
+                  onClick={() => setActiveTool("markdown-converter")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<AlignLeft className="h-8 w-8 text-primary" />}
+                  title="Whitespace Remover"
+                  description="Remove extra spaces between words and empty lines."
+                  onClick={() => setActiveTool("whitespace-remover")}
                   isNew
                 />
               </div>

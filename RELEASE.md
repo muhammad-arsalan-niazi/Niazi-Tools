@@ -1,3 +1,34 @@
+# Release Notes - v4.0.0
+
+This release is a major milestone for Niazi Tools, introducing **four highly requested utilities** and comprehensive **SEO Optimization** (including Google Search Console verification support) to help the application rank higher and perform optimally on search engines.
+
+## 🚀 New Features: The Developer & Formatting Essentials
+
+We've added a whole new suite of tools to streamline developer utility, coding workflows, and clean formatting.
+
+### 1. ✨ **New Tool: URL Extractor**
+-   **Instant Link Extraction:** Extract all valid URLs automatically from any chaotic block of text.
+-   **Export & Copy:** Instantly copy the list of links or download them as a flat list file.
+
+### 2. ✨ **New Tool: Base64 Converter**
+-   **Bidirectional Conversion:** Encode raw text to Base64 or decode Base64 back to plain text.
+-   **Secure & Offline:** Safe and local browser conversion ensuring sensitive tokens never leave your system.
+
+### 3. ✨ **New Tool: Markdown to HTML**
+-   **Drafting Companion:** Paste raw Markdown text and get clean, well-formatted raw HTML markup tags ready to copy for CMS, websites, or emails.
+
+### 4. ✨ **New Tool: Whitespace Remover**
+-   **Precision Cleaner:** Clean up double spaces, tab lines, trailing spaces, and blank lines from your data or code strings instantly.
+
+---
+
+## 📈 Search Engine Optimization (SEO) & Analytics
+-   **Search Engine Visibility:** Added optimized static metadata configurations (Title, Keywords, Authors, OpenGraph) to improve Google search indexing.
+-   **Google Search Console Verification:** Integrated verification credentials into layout metadata to ensure verified indexing.
+-   **Performance Upgrades:** Implemented fast loading components and clean SEO structures.
+
+---
+
 # Release Notes - v3.0.0
 
 This is a landmark update for Niazi Tools, introducing **five powerful new utilities** focused on advanced list manipulation and text analysis. This release significantly expands the app's capabilities, making it an even more indispensable part of your data processing workflow.
