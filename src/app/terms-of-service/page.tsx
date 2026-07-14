@@ -86,7 +86,7 @@ export default function TermsOfServicePage() {
         <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
           If you have any questions regarding usage, licenses, or anything else about Niazi Tools, please don't hesitate to contact us.
         </p>
-        <a href="/contact" className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-xl font-bold text-lg hover:bg-primary/90 hover:scale-105 transition-all shadow-md">
+        <a href="/contact" className="inline-flex items-center justify-center bg-primary text-primary-foreground px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-bold text-base sm:text-lg hover:bg-primary/90 hover:scale-105 transition-all shadow-md w-full sm:w-auto">
           Contact Us Today &rarr;
         </a>
       </div>

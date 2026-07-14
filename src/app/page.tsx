@@ -3853,12 +3853,12 @@ if (activeTool === 'duplicate-remover') {
                 
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full sm:w-auto">
                   <a href="#tools-grid" className="w-full sm:w-auto">
-                    <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+                    <Button size="lg" className="w-full sm:w-auto h-12 px-6 text-base sm:h-14 sm:px-8 sm:text-lg rounded-full shadow-xl shadow-primary/20 hover:scale-105 transition-all">
                       Explore Tools &rarr;
                     </Button>
                   </a>
                   <a href="/services" className="w-full sm:w-auto">
-                    <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full hover:bg-muted transition-all border-2">
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto h-12 px-6 text-base sm:h-14 sm:px-8 sm:text-lg rounded-full hover:bg-muted transition-all border-2">
                       Hire the Developer
                     </Button>
                   </a>
