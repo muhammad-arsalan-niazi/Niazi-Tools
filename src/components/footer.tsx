@@ -22,9 +22,28 @@ export function Footer() {
           {/* Navigation */}
           <div className="flex flex-col gap-3">
             <h4 className="font-semibold text-foreground">Navigation</h4>
-            <Link href="/" className="text-muted-foreground hover:text-primary transition-colors text-sm">Home (All Tools)</Link>
-            <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors text-sm">SEO Blog & Guides</Link>
-            <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">Contact & About</Link>
+            <ul className="space-y-1">
+              <li className="mb-2">
+                <Link href="/" className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  Free Online Tools
+                </Link>
+              </li>
+              <li className="mb-2">
+                <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  Tool Guides & SEO Blog
+                </Link>
+              </li>
+              <li className="mb-2">
+                <Link href="/services" className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  Professional Services
+                </Link>
+              </li>
+              <li className="mb-2">
+                <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  Contact & About
+                </Link>
+              </li>
+            </ul>
           </div>
 
           {/* Legal */}

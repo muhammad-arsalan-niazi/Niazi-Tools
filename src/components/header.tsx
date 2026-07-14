@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from './ui/button';
-import { Moon, Sun, Layers, Menu, Home, BookOpen, Mail, FileText, Shield, Github, Facebook, Linkedin } from 'lucide-react';
+import { Moon, Sun, Layers, Menu, Home, BookOpen, Mail, FileText, Shield, Github, Facebook, Linkedin, Briefcase } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 export function Header() {
@@ -32,6 +32,7 @@ export function Header() {
   const navLinks = [
     { name: 'Home / Tools', href: '/', icon: Home },
     { name: 'Blog / Guide', href: '/blog', icon: BookOpen },
+    { name: 'Our Services', href: '/services', icon: Briefcase },
     { name: 'Contact & About', href: '/contact', icon: Mail },
   ];
 
@@ -100,6 +101,9 @@ export function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="p-3 mb-1 text-base">
                   <Link href="/blog" className="flex items-center cursor-pointer w-full"><BookOpen className="mr-3 h-5 w-5" /> Blog / Guide</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="p-3 mb-1 text-base">
+                  <Link href="/services" className="flex items-center cursor-pointer w-full"><Briefcase className="mr-3 h-5 w-5" /> Our Services</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="p-3 mb-1 text-base">
                   <Link href="/contact" className="flex items-center cursor-pointer w-full"><Mail className="mr-3 h-5 w-5" /> Contact & About</Link>

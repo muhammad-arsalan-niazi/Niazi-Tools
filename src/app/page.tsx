@@ -3825,6 +3825,19 @@ if (activeTool === 'duplicate-remover') {
 
           {activeTool === null ? (
             <>
+              {/* Awesome Animated Hero Banner (Only visible when no tool is selected) */}
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-background to-blue-500/10 border border-primary/20 mb-16 p-8 sm:p-16 text-center shadow-2xl animate-in fade-in zoom-in duration-700">
+                <div className="absolute inset-0 bg-primary/5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-background to-background opacity-50"></div>
+                <div className="relative z-10">
+                  <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold font-headline mb-6 tracking-tight leading-tight bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-sm">
+                    Niazi Tools
+                  </h1>
+                  <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                    The ultimate free, lightning-fast, and 100% private offline-first utility toolkit. No ads, no sign-ups, just pure performance.
+                  </p>
+                </div>
+              </div>
+
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-foreground mb-2">
                   {nickname ? (
@@ -3835,13 +3848,13 @@ if (activeTool === 'duplicate-remover') {
                       </span>
                     </>
                   ) : (
-                    <span className="bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient">
-                      Welcome!
+                    <span className="text-foreground">
+                      Select a tool below to get started.
                     </span>
                   )}
                 </h2>
                 <p className="text-muted-foreground">
-                  Select a tool below to get started.
+                  All tools run completely offline in your browser.
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-50 zoom-in-95 duration-500">
