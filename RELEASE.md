@@ -1,3 +1,28 @@
+# Release Notes - v5.0.0
+
+This is a massive platform upgrade introducing a complete SEO Infrastructure, a dynamic SEO Blog system, and professional static pages designed to drive organic search traffic to Niazi Tools.
+
+## 🚀 Enhancements
+
+### ✨ **Dynamic SEO Blog & Guides**
+-   **18 Unique Tool Guides:** A comprehensive `/blog` index featuring 18 individual guide pages (e.g. `/blog/email-extractor`), built directly into the site.
+-   **Raw HTML Rendering:** Blog pages are rendered via raw HTML for maximum performance without heavy Markdown parsers.
+-   **Table of Contents:** The blog index features a sticky table of contents for easy navigation.
+-   **Isolated Architecture:** The blog uses Next.js static generation entirely isolated from the main SPA tools, ensuring the main app never crashes.
+
+### ✨ **Comprehensive Schema & Metadata**
+-   **JSON-LD Structured Data:** Added WebApplication, Organization, FAQPage, and Person schema for rich Google snippets.
+-   **Local SEO:** Integrated the author's location (Sargodha, Pakistan) directly into the SEO markup.
+-   **Sitemap & Robots:** Dynamically generated `sitemap.xml` and `robots.txt` for superior crawling.
+-   **Favicons & Manifest:** Full PWA web manifest and cross-device favicon support.
+
+### ✨ **New Static Pages**
+-   **Contact & About Page:** A beautifully styled page showcasing the author's portfolio, 5 social links, and a dedicated "Hire for WordPress & SEO Projects" call to action.
+-   **Legal Pages:** Added comprehensive `Terms of Service` and `Privacy Policy` pages.
+-   **Multi-Column Footer:** Replaced the simple footer with a responsive 4-column footer featuring brand, navigation, legal, and social links.
+
+---
+
 # Release Notes - v4.1.0
 
 This release focuses on a major upgrade to the **Email Campaign Builder** tool, increasing its capacity by 4x.

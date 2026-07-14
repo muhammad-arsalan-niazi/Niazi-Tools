@@ -1,4 +1,4 @@
-# Niazi Tools - Version 4.0.0
+# Niazi Tools - Version 5.0.0
 A comprehensive collection of free online tools for text processing, data extraction, formatting, and conversion.
 
 Welcome to **Niazi Tools**, a powerful and privacy-focused web application designed to streamline your daily text and data processing tasks. Built with modern technology, this app offers a suite of free, offline-first utilities that work entirely in your browser. Your data is never sent to any server, ensuring complete privacy.
@@ -10,6 +10,9 @@ Welcome to **Niazi Tools**, a powerful and privacy-focused web application desig
 -   **Offline Capable:** Once loaded, the app can work without an internet connection.
 -   **Modern & Responsive UI:** A clean, intuitive, and mobile-friendly interface built with ShadCN UI and Tailwind CSS.
 -   **Dark & Light Mode:** Choose the theme that suits your preference.
+-   **Comprehensive SEO Blog:** Built-in dynamic SEO blog indexing all 18 tools with full JSON-LD schema markup to drive organic traffic.
+-   **Professional Author & Contact Page:** Dedicated About/Contact page showcasing the author's portfolio and availability for WordPress/SEO projects.
+-   **Legal Pages:** Complete Privacy Policy and Terms of Service.
 
 ## 🛠️ Tools Available
 
