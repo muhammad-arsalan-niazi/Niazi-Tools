@@ -237,7 +237,7 @@ export default function ContactPage() {
               <Card className="h-full transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/20 border-l-4 border-l-amber-500 group-hover:-translate-y-1 bg-card">
                 <CardContent className="p-6 flex flex-col items-center text-center gap-4">
                   <div className="p-4 rounded-full bg-amber-500/10 text-amber-500">
-                    <img src="https://gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y" alt="Gravatar" className="w-8 h-8 opacity-75" />
+                    <img src="https://avatars.githubusercontent.com/u/143963135?v=4" alt="Muhammad Arsalan Niazi Gravatar" className="w-8 h-8 rounded-full shadow-sm ring-2 ring-amber-500/20" />
                   </div>
                   <div>
                     <h4 className="font-bold text-lg">Gravatar</h4>
