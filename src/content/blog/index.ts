@@ -1,3 +1,6 @@
+import blogPostImage1 from './Niazi Tools - Blog Post Image 1.avif';
+import blogPostImage2 from './Niazi Tools - Blog Post Image 2.avif';
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -46,7 +49,7 @@ const generateToolContent = (name: string, desc: string, faqs: { question: strin
 
   <!-- Image Block -->
   <div class="my-10 rounded-2xl overflow-hidden shadow-2xl border border-border/50">
-     <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop" alt="${name} Tool Interface Preview" class="w-full h-auto object-cover" />
+     <img src="${blogPostImage1.src}" alt="${name} Tool Interface Preview" class="w-full h-auto object-cover" />
   </div>
 
   <h2 id="why-best" class="text-3xl sm:text-4xl font-bold font-headline text-foreground border-b pb-4 mt-16 mb-6">Why is this the Best ${name} Tool on the Internet?</h2>
@@ -82,7 +85,7 @@ const generateToolContent = (name: string, desc: string, faqs: { question: strin
 
   <!-- Secondary Image Block -->
   <div class="my-10 rounded-2xl overflow-hidden shadow-2xl border border-border/50">
-     <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" alt="${name} Process Flow" class="w-full h-auto object-cover" />
+     <img src="${blogPostImage2.src}" alt="${name} Process Flow" class="w-full h-auto object-cover" />
   </div>
 
   <h2 id="faqs" class="text-3xl sm:text-4xl font-bold font-headline text-foreground border-b pb-4 mt-16 mb-6">Frequently Asked Questions (FAQ)</h2>

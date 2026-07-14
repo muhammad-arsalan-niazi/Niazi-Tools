@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { toolsList } from '@/content/blog';
+import blogHeroImage from '@/content/blog/Niazi Tools - Blog Post.avif';
 
 export const metadata: Metadata = {
   title: 'SEO Tools & Guides | Niazi Tools',
@@ -10,6 +11,24 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/blog',
   },
+  openGraph: {
+    title: 'SEO Tools & Guides | Niazi Tools',
+    description: 'Read our comprehensive guides on free online utilities like email extractors, base64 converters, text processing, and more.',
+    images: [
+      {
+        url: `https://niazi-tools.vercel.app${blogHeroImage.src}`,
+        width: blogHeroImage.width,
+        height: blogHeroImage.height,
+        alt: 'Niazi Tools Blog',
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SEO Tools & Guides | Niazi Tools',
+    description: 'Read our comprehensive guides on free online utilities like email extractors, base64 converters, text processing, and more.',
+    images: [`https://niazi-tools.vercel.app${blogHeroImage.src}`],
+  }
 };
 
 export default function BlogIndexPage() {
@@ -29,7 +48,7 @@ export default function BlogIndexPage() {
         'name': 'Muhammad Arsalan Niazi',
         'url': 'https://niazi-tools.vercel.app/contact'
       },
-      'image': 'https://niazi-tools.vercel.app/favicon/android-chrome-512x512.png'
+      'image': `https://niazi-tools.vercel.app${blogHeroImage.src}`
     }))
   };
 
@@ -92,7 +111,7 @@ export default function BlogIndexPage() {
               {/* Theme-Aware Banner */}
               <div className="h-40 w-full relative border-b overflow-hidden group-hover:opacity-90 transition-opacity duration-500">
                 <img 
-                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop" 
+                  src={blogHeroImage.src} 
                   alt="Tech Background"
                   className="absolute inset-0 w-full h-full object-cover opacity-60 dark:opacity-40"
                 />

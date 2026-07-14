@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { toolsList } from '@/content/blog';
 import { notFound } from 'next/navigation';
 import { AuthorBio } from '@/components/author-bio';
+import blogHeroImage from '@/content/blog/Niazi Tools - Blog Post.avif';
 
 export async function generateStaticParams() {
   return toolsList.map((tool) => ({
@@ -35,6 +36,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: tool.description,
       type: 'article',
       publishedTime: tool.publishedDate,
+      images: [
+        {
+          url: `https://niazi-tools.vercel.app${blogHeroImage.src}`,
+          width: blogHeroImage.width,
+          height: blogHeroImage.height,
+        }
+      ],
     },
   };
 }
@@ -53,7 +61,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     'headline': tool.title,
     'description': tool.description,
     'url': `https://niazi-tools.vercel.app/blog/${tool.slug}`,
-    'image': 'https://niazi-tools.vercel.app/favicon/android-chrome-512x512.png',
+    'image': `https://niazi-tools.vercel.app${blogHeroImage.src}`,
     'datePublished': tool.publishedDate,
     'author': {
       '@type': 'Person',
@@ -95,7 +103,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {/* Real Image Hero Banner for SEO */}
         <div className="h-48 sm:h-64 w-full relative border-b overflow-hidden">
           <img 
-            src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop" 
+            src={blogHeroImage.src} 
             alt={tool.title}
             className="absolute inset-0 w-full h-full object-cover opacity-40 dark:opacity-20"
           />
