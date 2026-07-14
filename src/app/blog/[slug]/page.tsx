@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toolsList } from '@/content/blog';
 import { notFound } from 'next/navigation';
+import { AuthorBio } from '@/components/author-bio';
 
 export async function generateStaticParams() {
   return toolsList.map((tool) => ({
@@ -52,11 +53,26 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     'headline': tool.title,
     'description': tool.description,
     'url': `https://niazi-tools.vercel.app/blog/${tool.slug}`,
+    'image': 'https://niazi-tools.vercel.app/favicon/android-chrome-512x512.png',
     'datePublished': tool.publishedDate,
     'author': {
       '@type': 'Person',
       'name': 'Muhammad Arsalan Niazi',
+      'url': 'https://github.com/muhammad-arsalan-niazi'
     },
+  };
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': tool.faqs.map(faq => ({
+      '@type': 'Question',
+      'name': faq.question,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': faq.answer,
+      }
+    }))
   };
 
   return (
@@ -65,17 +81,20 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       
       <PageHeader 
         title={tool.title} 
         description={tool.description}
       />
 
-      <Card className="overflow-hidden shadow-xl border-none mb-12 animate-in fade-in-50 duration-700">
-        {/* CSS-Styled Hero Banner */}
-        <div className="h-64 sm:h-80 w-full bg-gradient-to-br from-primary via-fuchsia-500 to-cyan-400 flex items-center justify-center p-8 relative">
-          <div className="absolute inset-0 bg-black/20"></div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-headline text-white text-center drop-shadow-lg relative z-10 tracking-tight leading-tight">
+      <Card className="overflow-hidden shadow-xl border-none mb-12 animate-in fade-in-50 duration-700 bg-card">
+        {/* CSS-Styled Hero Banner - Reverting to subtle app-like scheme */}
+        <div className="h-48 w-full bg-muted/50 border-b flex items-center justify-center p-8 relative">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline text-foreground text-center relative z-10 tracking-tight leading-tight">
             {tool.title}
           </h1>
         </div>
@@ -88,12 +107,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <p className="text-muted-foreground mb-6">
               Use this completely free tool right now in your browser. No sign-up required.
             </p>
-            <Link href={`/#${tool.slug}`}>
+            <Link href="/">
               <Button size="lg" className="text-lg px-8 shadow-lg shadow-primary/25 hover:-translate-y-1 transition-transform">
                 Launch Tool Now &rarr;
               </Button>
             </Link>
           </div>
+          
+          <AuthorBio />
         </CardContent>
       </Card>
     </div>

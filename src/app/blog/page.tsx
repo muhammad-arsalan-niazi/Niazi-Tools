@@ -61,11 +61,10 @@ export default function BlogIndexPage() {
         {/* Blog Post Cards */}
         <div className="lg:w-3/4 space-y-8">
           {toolsList.map(tool => (
-            <Card key={tool.slug} id={tool.slug} className="overflow-hidden shadow-md hover:shadow-lg transition-all group">
-              {/* CSS-Styled Banner */}
-              <div className="h-40 sm:h-48 w-full bg-gradient-to-br from-primary/80 via-fuchsia-500/80 to-cyan-400/80 flex items-center justify-center p-6 relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
-                <div className="absolute inset-0 bg-black/10"></div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold font-headline text-white text-center drop-shadow-md relative z-10">
+            <Card key={tool.slug} id={tool.slug} className="overflow-hidden shadow-md hover:shadow-lg transition-all group border-primary/10">
+              {/* Theme-Aware Banner */}
+              <div className="h-32 w-full bg-muted/50 border-b flex items-center justify-center p-6 relative overflow-hidden group-hover:bg-muted transition-colors duration-500">
+                <h2 className="text-xl sm:text-2xl font-bold font-headline text-foreground text-center relative z-10">
                   {tool.title}
                 </h2>
               </div>

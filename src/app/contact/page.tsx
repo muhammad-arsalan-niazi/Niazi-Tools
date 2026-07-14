@@ -34,20 +34,29 @@ export default function ContactPage() {
             <div className="text-center md:text-left space-y-4 flex-1">
               <h2 className="text-3xl font-bold font-headline tracking-wide">Muhammad Arsalan Niazi</h2>
               <p className="text-muted-foreground text-lg leading-relaxed">
-                I am a passionate Web Developer and SEO Expert based in <strong>Sargodha, Pakistan</strong>. I built Niazi Tools to provide a fast, secure, and privacy-focused suite of utilities for professionals everywhere.
+                I am a passionate <strong>Web Developer and Technical SEO Expert</strong> based in <strong>Sargodha, Pakistan</strong>. I built Niazi Tools to provide a fast, secure, and privacy-focused suite of utilities for professionals everywhere.
               </p>
+              <div className="pt-2">
+                <h3 className="font-semibold text-foreground mb-2">My Professional Services Include:</h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">✨ Custom Next.js Web Apps</li>
+                  <li className="flex items-center gap-2">✨ WordPress Theme & Plugin Dev</li>
+                  <li className="flex items-center gap-2">✨ Technical SEO Optimization</li>
+                  <li className="flex items-center gap-2">✨ Speed & Performance Audits</li>
+                </ul>
+              </div>
             </div>
           </div>
         </Card>
 
         {/* CTA Banner */}
-        <div className="bg-primary text-primary-foreground rounded-2xl p-8 text-center shadow-xl relative overflow-hidden">
+        <div className="bg-primary text-primary-foreground rounded-2xl p-8 md:p-12 text-center shadow-xl relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <Briefcase size={120} />
           </div>
-          <h3 className="text-2xl sm:text-3xl font-bold mb-4 relative z-10">Available for WordPress & SEO Projects</h3>
-          <p className="text-lg opacity-90 max-w-2xl mx-auto mb-6 relative z-10">
-            Need a professional website or want to rank higher on Google? I specialize in delivering high-quality WordPress and SEO solutions. 
+          <h3 className="text-2xl sm:text-3xl font-bold mb-4 relative z-10">Looking for a Top-Rated WordPress & SEO Expert in Sargodha?</h3>
+          <p className="text-lg opacity-90 max-w-3xl mx-auto mb-6 relative z-10 leading-relaxed">
+            Whether you need a high-converting WordPress website, a complex custom web application, or need to rank higher on Google search results, I specialize in delivering elite, high-performance solutions for clients globally. 
           </p>
           <div className="relative z-10 font-medium text-xl">
             👇 <span className="font-bold underline decoration-2 underline-offset-4">Hire me on LinkedIn</span> or contact me via the links below!

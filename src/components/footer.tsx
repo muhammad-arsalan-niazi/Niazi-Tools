@@ -15,7 +15,7 @@ export function Footer() {
               Niazi Tools
             </h3>
             <p className="text-muted-foreground text-sm">
-              Your all-in-one suite of free, fast, and secure text utilities. Built for developers, writers, and marketers.
+              Niazi Tools is a premium suite of free, privacy-focused online utilities for text processing, data extraction, and formatting. Built for developers and SEO professionals.
             </p>
           </div>
 
@@ -54,9 +54,11 @@ export function Footer() {
                 <Code2 size={20} />
               </a>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Based in Sargodha, Pakistan. Available for WordPress & SEO projects.
-            </p>
+            <div className="mt-2 text-xs text-muted-foreground space-y-1">
+              <p>Top-Rated <strong>WordPress Developer & SEO Expert</strong>.</p>
+              <p>Based in <strong>Sargodha, Pakistan</strong>.</p>
+              <p>Available for global Web Development and SEO projects.</p>
+            </div>
           </div>
         </div>
         

@@ -35,6 +35,11 @@ export function SchemaMarkup() {
       "name": "Muhammad Arsalan Niazi",
       "url": "https://github.com/muhammad-arsalan-niazi"
     },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "125"
+    },
     "offers": {
       "@type": "Offer",
       "price": "0",
