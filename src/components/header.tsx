@@ -31,7 +31,7 @@ export function Header() {
 
   const navLinks = [
     { name: 'Home / Tools', href: '/', icon: Home },
-    { name: 'SEO Blog', href: '/blog', icon: BookOpen },
+    { name: 'Blog / Guide', href: '/blog', icon: BookOpen },
     { name: 'Contact & About', href: '/contact', icon: Mail },
   ];
 
@@ -94,21 +94,21 @@ export function Header() {
                   <Menu className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 mt-2">
-                <DropdownMenuItem asChild>
-                  <Link href="/" className="flex items-center cursor-pointer w-full"><Home className="mr-2 h-4 w-4" /> Home / Tools</Link>
+              <DropdownMenuContent align="end" className="w-64 mt-2 p-2">
+                <DropdownMenuItem asChild className="p-3 mb-1 text-base">
+                  <Link href="/" className="flex items-center cursor-pointer w-full"><Home className="mr-3 h-5 w-5" /> Home / Tools</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/blog" className="flex items-center cursor-pointer w-full"><BookOpen className="mr-2 h-4 w-4" /> SEO Blog</Link>
+                <DropdownMenuItem asChild className="p-3 mb-1 text-base">
+                  <Link href="/blog" className="flex items-center cursor-pointer w-full"><BookOpen className="mr-3 h-5 w-5" /> Blog / Guide</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/contact" className="flex items-center cursor-pointer w-full"><Mail className="mr-2 h-4 w-4" /> Contact & About</Link>
+                <DropdownMenuItem asChild className="p-3 mb-1 text-base">
+                  <Link href="/contact" className="flex items-center cursor-pointer w-full"><Mail className="mr-3 h-5 w-5" /> Contact & About</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/privacy-policy" className="flex items-center cursor-pointer w-full"><Shield className="mr-2 h-4 w-4" /> Privacy Policy</Link>
+                <DropdownMenuItem asChild className="p-3 mb-1 text-base">
+                  <Link href="/privacy-policy" className="flex items-center cursor-pointer w-full"><Shield className="mr-3 h-5 w-5" /> Privacy Policy</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/terms-of-service" className="flex items-center cursor-pointer w-full"><FileText className="mr-2 h-4 w-4" /> Terms of Service</Link>
+                <DropdownMenuItem asChild className="p-3 text-base">
+                  <Link href="/terms-of-service" className="flex items-center cursor-pointer w-full"><FileText className="mr-3 h-5 w-5" /> Terms of Service</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

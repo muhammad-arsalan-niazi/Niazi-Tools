@@ -24,32 +24,76 @@ const generateFaqs = (name: string, desc: string) => [
 ];
 
 const generateToolContent = (name: string, desc: string, faqs: { question: string; answer: string }[]) => `
-<div class="space-y-6">
-  <h2 class="text-3xl font-bold border-b pb-2">What is the ${name} Tool?</h2>
-  <p>The <strong>${name}</strong> tool by Niazi Tools is a completely free, fast, and secure online utility designed to help you ${desc.toLowerCase()}</p>
-  <p>Because Niazi Tools is built with an offline-first architecture, all processing happens entirely within your web browser. This means your data is never uploaded to any external servers, guaranteeing 100% privacy and lightning-fast speeds.</p>
+<div class="space-y-8 font-body leading-relaxed text-lg text-muted-foreground">
 
-  <h2 class="text-3xl font-bold border-b pb-2 mt-8">Key Features</h2>
-  <ul class="list-disc pl-6 space-y-2">
-    <li><strong>Instant Processing:</strong> No waiting for server responses.</li>
-    <li><strong>100% Private:</strong> Your data never leaves your device.</li>
-    <li><strong>Free to Use:</strong> No hidden fees, subscriptions, or intrusive ads.</li>
-    <li><strong>Mobile Friendly:</strong> Works perfectly on desktops, tablets, and smartphones.</li>
-  </ul>
+  <!-- Table of Contents -->
+  <div class="bg-primary/5 border border-primary/20 rounded-xl p-6 sm:p-8 shadow-sm mb-10">
+    <h3 class="text-xl sm:text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
+      📋 Table of Contents
+    </h3>
+    <ul class="space-y-3 text-primary list-disc pl-5 font-medium">
+      <li><a href="#what-is" class="hover:underline hover:text-foreground transition-colors">What is the ${name} Tool?</a></li>
+      <li><a href="#why-best" class="hover:underline hover:text-foreground transition-colors">Why is this the Best Tool on the Internet?</a></li>
+      <li><a href="#key-features" class="hover:underline hover:text-foreground transition-colors">Key Features & Benefits</a></li>
+      <li><a href="#how-to-use" class="hover:underline hover:text-foreground transition-colors">Step-by-Step Guide: How to Use</a></li>
+      <li><a href="#faqs" class="hover:underline hover:text-foreground transition-colors">Frequently Asked Questions</a></li>
+    </ul>
+  </div>
 
-  <h2 class="text-3xl font-bold border-b pb-2 mt-8">How to Use</h2>
-  <ol class="list-decimal pl-6 space-y-2">
-    <li>Enter or paste your text into the input area.</li>
-    <li>Select your desired options or configurations if applicable.</li>
-    <li>The results will be generated instantly.</li>
-    <li>Click the copy button to grab your results!</li>
+  <h2 id="what-is" class="text-3xl sm:text-4xl font-bold font-headline text-foreground border-b pb-4 mt-16 mb-6">What is the ${name} Tool?</h2>
+  <p>The <strong>${name}</strong> by Niazi Tools is a completely free, lightning-fast, and secure online utility designed specifically to help you ${desc.toLowerCase()} Whether you are a developer, student, or professional, this utility will save you countless hours of manual work and frustration.</p>
+  <p class="mt-4">Because Niazi Tools is built with a modern offline-first architecture, all data processing happens entirely within your web browser. This means your data is <strong>never uploaded to any external servers</strong>, guaranteeing 100% privacy.</p>
+
+  <!-- Image Block -->
+  <div class="my-10 rounded-2xl overflow-hidden shadow-2xl border border-border/50">
+     <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop" alt="${name} Tool Interface Preview" class="w-full h-auto object-cover" />
+  </div>
+
+  <h2 id="why-best" class="text-3xl sm:text-4xl font-bold font-headline text-foreground border-b pb-4 mt-16 mb-6">Why is this the Best ${name} Tool on the Internet?</h2>
+  <p>There are many tools out there, but this is undeniably the <strong>best ${name} tool available online today</strong>. Why? Because we eliminated everything that makes other tools frustrating. There are absolutely <strong>no intrusive ads</strong>, no sign-ups required, and no hidden subscriptions. It is completely free, instantly responsive, and works flawlessly on both desktop and mobile devices. We built this tool to respect your time and your privacy.</p>
+
+  <h2 id="key-features" class="text-3xl sm:text-4xl font-bold font-headline text-foreground border-b pb-4 mt-16 mb-6">Key Features & Benefits</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+    <div class="bg-card border border-border/50 rounded-xl p-6 shadow-sm hover:border-primary/50 transition-colors">
+      <h4 class="font-bold text-xl text-foreground mb-2 flex items-center">⚡ Instant Processing</h4>
+      <p class="text-base">No waiting for server responses. Your results are generated within milliseconds.</p>
+    </div>
+    <div class="bg-card border border-border/50 rounded-xl p-6 shadow-sm hover:border-primary/50 transition-colors">
+      <h4 class="font-bold text-xl text-foreground mb-2 flex items-center">🔒 100% Private</h4>
+      <p class="text-base">Your data never leaves your device. Everything is processed locally in your browser.</p>
+    </div>
+    <div class="bg-card border border-border/50 rounded-xl p-6 shadow-sm hover:border-primary/50 transition-colors">
+      <h4 class="font-bold text-xl text-foreground mb-2 flex items-center">💸 Completely Free</h4>
+      <p class="text-base">No hidden fees, subscriptions, or paywalls. Use it as much as you need.</p>
+    </div>
+    <div class="bg-card border border-border/50 rounded-xl p-6 shadow-sm hover:border-primary/50 transition-colors">
+      <h4 class="font-bold text-xl text-foreground mb-2 flex items-center">📱 Mobile Friendly</h4>
+      <p class="text-base">Enjoy a seamless experience on desktops, tablets, and smartphones.</p>
+    </div>
+  </div>
+
+  <h2 id="how-to-use" class="text-3xl sm:text-4xl font-bold font-headline text-foreground border-b pb-4 mt-16 mb-6">Step-by-Step Guide: How to Use</h2>
+  <ol class="list-decimal pl-6 space-y-4 marker:text-primary marker:font-bold text-lg">
+    <li class="pl-2"><strong>Provide your Input:</strong> Enter or paste your text into the input area provided on the tool's interface.</li>
+    <li class="pl-2"><strong>Configure Options:</strong> Select your desired configurations or toggles if applicable.</li>
+    <li class="pl-2"><strong>Get Results:</strong> The tool will instantly process your input and generate the exact results you need.</li>
+    <li class="pl-2"><strong>Copy & Paste:</strong> Click the handy copy button to grab your results and use them wherever you want!</li>
   </ol>
-  <h2 class="text-3xl font-bold border-b pb-2 mt-8">Frequently Asked Questions (FAQ)</h2>
-  <div class="space-y-4">
+
+  <!-- Secondary Image Block -->
+  <div class="my-10 rounded-2xl overflow-hidden shadow-2xl border border-border/50">
+     <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop" alt="${name} Process Flow" class="w-full h-auto object-cover" />
+  </div>
+
+  <h2 id="faqs" class="text-3xl sm:text-4xl font-bold font-headline text-foreground border-b pb-4 mt-16 mb-6">Frequently Asked Questions (FAQ)</h2>
+  <div class="space-y-6 mt-6">
     ${faqs.map(faq => `
-      <div class="border rounded-lg p-4 bg-muted/20">
-        <h3 class="font-bold text-lg mb-2">${faq.question}</h3>
-        <p class="text-muted-foreground">${faq.answer}</p>
+      <div class="border border-border/50 rounded-xl p-6 bg-muted/30 hover:bg-muted/50 transition-colors shadow-sm">
+        <h3 class="font-bold text-xl text-foreground mb-3 flex items-start gap-3">
+          <span class="text-primary text-2xl leading-none font-headline">Q.</span>
+          ${faq.question}
+        </h3>
+        <p class="text-muted-foreground pl-9 text-base">${faq.answer}</p>
       </div>
     `).join('')}
   </div>

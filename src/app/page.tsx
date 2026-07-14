@@ -3822,7 +3822,6 @@ if (activeTool === 'duplicate-remover') {
 
 
         <div className={`w-full ${activeTool ? 'max-w-6xl' : 'max-w-4xl'} transition-all duration-500`}>
-          <AppHeader />
 
           {activeTool === null ? (
             <>
@@ -4053,13 +4052,7 @@ if (activeTool === 'duplicate-remover') {
             </div>
           )}
         </div>
-        <div className="fixed bottom-6 right-6 z-50 transition-opacity duration-300">
-           {showScroll && (
-                <Button size="icon" onClick={scrollTop} className="rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90">
-                    <ArrowUp />
-                </Button>
-            )}
-        </div>
+
         <div className="fixed bottom-6 left-6 z-50">
             <Button 
                 size="icon" 

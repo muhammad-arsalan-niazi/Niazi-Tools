@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer";
 import { SchemaMarkup } from "@/components/schema-markup";
 import { Copyright } from "@/components/copyright";
 import { Toaster } from "@/components/ui/toaster";
+import { BackToTop } from "@/components/back-to-top";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -86,6 +87,7 @@ export default function RootLayout({
         <Header />
         <div className="flex-1">{children}</div>
         <Footer />
+        <BackToTop />
         <Toaster />
       </body>
     </html>
