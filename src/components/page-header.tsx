@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { ArrowLeft, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Layers } from 'lucide-react';
 
 interface PageHeaderProps {
   title: string;
@@ -40,8 +40,20 @@ export function PageHeader({ title, description }: PageHeaderProps) {
           onClick={() => router.push('/')}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
+          <span className="hidden sm:inline">Back to Home</span>
+          <span className="sm:hidden">Back</span>
         </Button>
+
+        {/* Brand Logo for Subpages */}
+        <div 
+          className="flex items-center justify-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" 
+          onClick={() => router.push('/')}
+        >
+          <Layers className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
+          <h2 className="text-xl sm:text-2xl font-headline tracking-wider bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient">
+            Niazi Tools
+          </h2>
+        </div>
 
         <Button
           variant="outline"
