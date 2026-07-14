@@ -1,10 +1,24 @@
 import type { Metadata } from "next";
+import { Inter, Righteous } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SchemaMarkup } from "@/components/schema-markup";
 import { Copyright } from "@/components/copyright";
 import { Toaster } from "@/components/ui/toaster";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const righteous = Righteous({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-righteous",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://niazi-tools.vercel.app'),
@@ -64,18 +78,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${righteous.variable}`} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter&family=Righteous&display=swap"
-          rel="stylesheet"
-        ></link>
         <SchemaMarkup />
       </head>
       <body className="font-body antialiased flex flex-col min-h-svh">
