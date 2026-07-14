@@ -38,12 +38,19 @@ export const metadata: Metadata = {
     icon: [
       { url: '/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
       { url: '/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon.ico' },
+      { url: '/favicon/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/favicon/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/favicon/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon/favicon.ico' },
       { url: '/icon.svg', type: 'image/svg+xml' }
     ],
     apple: [
       { url: '/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
+  },
+  appleWebApp: {
+    title: "Niazi Tools",
+    statusBarStyle: "default",
   },
   openGraph: {
     title: "Niazi Tools | Free Online Utility Toolkit",
@@ -94,4 +101,3 @@ export default function RootLayout({
   );
 }
 
-    
