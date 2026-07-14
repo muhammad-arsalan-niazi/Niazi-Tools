@@ -3825,16 +3825,38 @@ if (activeTool === 'duplicate-remover') {
 
           {activeTool === null ? (
             <>
-              {/* Awesome Animated Hero Banner (Only visible when no tool is selected) */}
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-background to-blue-500/10 border border-primary/20 mb-20 p-8 sm:p-16 md:p-24 text-center shadow-2xl animate-in fade-in zoom-in duration-700">
-                <div className="absolute inset-0 bg-primary/5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-background to-background opacity-50"></div>
-                <div className="relative z-10 max-w-4xl mx-auto">
-                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-headline mb-6 tracking-tight leading-tight bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-sm">
-                    Niazi Tools
-                  </h1>
-                  <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                    The ultimate free, lightning-fast, and 100% private offline-first utility toolkit. No ads, no sign-ups, just pure performance.
-                  </p>
+              {/* Modern, Floating Hero Section */}
+              <div className="relative w-full mb-24 pt-12 pb-16 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                {/* Background ambient glow */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-64 bg-primary/20 blur-[100px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30"></div>
+                
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-8 border border-primary/20 shadow-sm animate-bounce">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                  </span>
+                  v6.0.0 Now Live - Completely Offline
+                </div>
+
+                <h1 className="text-5xl sm:text-7xl md:text-8xl font-black font-headline mb-6 tracking-tighter leading-none bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-xl">
+                  Niazi Tools
+                </h1>
+                
+                <p className="text-xl sm:text-2xl md:text-3xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light mb-10">
+                  The ultimate free, lightning-fast, and 100% private offline-first utility toolkit. No ads, no sign-ups, just pure performance.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full sm:w-auto">
+                  <a href="#tools-grid" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: document.getElementById('tools-grid')?.offsetTop || 500, behavior: 'smooth' }); }} className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+                      Explore Tools &rarr;
+                    </Button>
+                  </a>
+                  <a href="/services" className="w-full sm:w-auto">
+                    <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full hover:bg-muted transition-all border-2">
+                      Hire the Developer
+                    </Button>
+                  </a>
                 </div>
               </div>
 
@@ -3857,7 +3879,7 @@ if (activeTool === 'duplicate-remover') {
                   All tools run completely offline in your browser.
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-50 zoom-in-95 duration-500">
+              <div id="tools-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-50 zoom-in-95 duration-500">
                 <ToolCard
                   icon={<Copy className="h-8 w-8 text-primary" />}
                   title="Copyable Lines"

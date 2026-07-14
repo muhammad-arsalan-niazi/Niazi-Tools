@@ -390,6 +390,11 @@ export default function ServicesPage() {
                 <Facebook className="mr-3 h-6 w-6" /> Message on Facebook
               </Button>
             </a>
+            <a href="https://profiles.wordpress.org/muhammadarsalanniazi/" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full bg-[#21759b] hover:bg-[#15536e] text-white shadow-lg shadow-[#21759b]/20 h-14 text-lg px-8">
+                <Globe className="mr-3 h-6 w-6" /> WordPress Profile
+              </Button>
+            </a>
           </div>
         </div>
       </div>

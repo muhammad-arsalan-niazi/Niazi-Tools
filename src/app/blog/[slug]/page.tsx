@@ -95,7 +95,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         {/* Real Image Hero Banner for SEO */}
         <div className="h-48 sm:h-64 w-full relative border-b overflow-hidden">
           <img 
-            src="https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?q=80&w=1200&auto=format&fit=crop" 
+            src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop" 
             alt={tool.title}
             className="absolute inset-0 w-full h-full object-cover opacity-40 dark:opacity-20"
           />

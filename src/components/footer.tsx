@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Github, Facebook, Linkedin, Youtube, Code2 } from 'lucide-react';
+import { Github, Facebook, Linkedin, Youtube, Code2, Globe, User } from 'lucide-react';
 import { Copyright } from './copyright';
 
 export function Footer() {
@@ -82,10 +82,16 @@ export function Footer() {
               <a href="https://www.linkedin.com/in/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
                 <Linkedin size={20} />
               </a>
-              <a href="https://www.youtube.com/@DevArsalan" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <a href="https://profiles.wordpress.org/muhammadarsalanniazi/" title="WordPress Profile" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-blue-500 hover:text-white transition-all">
+                <Globe size={20} />
+              </a>
+              <a href="https://gravatar.com/muhammadarsalanniazi" title="Gravatar Profile" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-amber-500 hover:text-white transition-all">
+                <User size={20} />
+              </a>
+              <a href="https://www.youtube.com/@DevArsalan" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-red-500 hover:text-white transition-all">
                 <Youtube size={20} />
               </a>
-              <a href="https://www.kaggle.com/marsalanofficial" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all">
+              <a href="https://www.kaggle.com/marsalanofficial" target="_blank" rel="noopener noreferrer" className="p-2 rounded-full bg-muted text-muted-foreground hover:bg-cyan-500 hover:text-white transition-all">
                 <Code2 size={20} />
               </a>
             </div>

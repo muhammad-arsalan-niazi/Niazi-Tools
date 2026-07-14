@@ -79,6 +79,18 @@ export default function PrivacyPolicyPage() {
         </div>
 
       </div>
+
+      {/* Contact Banner */}
+      <div className="mt-16 bg-gradient-to-r from-primary/10 via-background to-blue-500/10 border border-primary/20 rounded-3xl p-8 sm:p-12 text-center shadow-lg animate-in fade-in zoom-in duration-700">
+        <h3 className="text-2xl sm:text-3xl font-bold font-headline mb-4">Have Questions About Your Privacy?</h3>
+        <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
+          We are committed to absolute transparency. If you have any concerns about how our offline-first tools operate, feel free to reach out.
+        </p>
+        <a href="/contact" className="inline-block bg-primary text-primary-foreground px-8 py-4 rounded-xl font-bold text-lg hover:bg-primary/90 hover:scale-105 transition-all shadow-md">
+          Contact Us Today &rarr;
+        </a>
+      </div>
+
     </div>
   );
 }

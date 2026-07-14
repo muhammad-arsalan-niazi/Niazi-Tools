@@ -46,8 +46,11 @@ export default function ContactPage() {
                   <a href="https://github.com/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer">
                     <Button variant="outline" className="flex items-center gap-2"><Github size={16} /> GitHub</Button>
                   </a>
-                  <a href="https://profiles.wordpress.org/muhammad-arsalan-niazi/" target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" className="flex items-center gap-2">WordPress Profile</Button>
+                  <a href="https://profiles.wordpress.org/muhammadarsalanniazi/" target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" className="flex items-center gap-2"><Globe size={16} /> WordPress Profile</Button>
+                  </a>
+                  <a href="https://gravatar.com/muhammadarsalanniazi" target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" className="flex items-center gap-2">Gravatar Profile</Button>
                   </a>
                 </div>
               </div>
@@ -195,6 +198,36 @@ export default function ContactPage() {
                     <p className="text-sm text-muted-foreground mt-1">Data Science</p>
                   </div>
                   <span className="mt-2 text-sm font-semibold text-[#20BEFF] group-hover:underline">View Profile →</span>
+                </CardContent>
+              </Card>
+            </a>
+
+            <a href="https://profiles.wordpress.org/muhammadarsalanniazi/" target="_blank" rel="noopener noreferrer" className="group">
+              <Card className="h-full transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 border-l-4 border-l-blue-500 group-hover:-translate-y-1 bg-card">
+                <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+                  <div className="p-4 rounded-full bg-blue-500/10 text-blue-500">
+                    <Globe size={32} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg">WordPress</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Official WP Profile</p>
+                  </div>
+                  <span className="mt-2 text-sm font-semibold text-blue-500 group-hover:underline">View Contributions →</span>
+                </CardContent>
+              </Card>
+            </a>
+
+            <a href="https://gravatar.com/muhammadarsalanniazi" target="_blank" rel="noopener noreferrer" className="group">
+              <Card className="h-full transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/20 border-l-4 border-l-amber-500 group-hover:-translate-y-1 bg-card">
+                <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+                  <div className="p-4 rounded-full bg-amber-500/10 text-amber-500">
+                    <img src="https://gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y" alt="Gravatar" className="w-8 h-8 opacity-75" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg">Gravatar</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Global Avatar</p>
+                  </div>
+                  <span className="mt-2 text-sm font-semibold text-amber-500 group-hover:underline">View Profile →</span>
                 </CardContent>
               </Card>
             </a>

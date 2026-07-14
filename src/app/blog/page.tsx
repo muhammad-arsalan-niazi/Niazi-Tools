@@ -65,7 +65,7 @@ export default function BlogIndexPage() {
               {/* Theme-Aware Banner */}
               <div className="h-40 w-full relative border-b overflow-hidden group-hover:opacity-90 transition-opacity duration-500">
                 <img 
-                  src="https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?q=80&w=1200&auto=format&fit=crop" 
+                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop" 
                   alt="Tech Background"
                   className="absolute inset-0 w-full h-full object-cover opacity-60 dark:opacity-40"
                 />

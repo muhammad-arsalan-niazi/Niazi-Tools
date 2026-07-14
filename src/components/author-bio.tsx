@@ -14,7 +14,7 @@ export function AuthorBio() {
       <div className="text-center md:text-left">
         <h4 className="text-xl sm:text-2xl font-bold font-headline mb-3 text-foreground">
           Muhammad Arsalan Niazi
-          <span className="block text-sm font-semibold text-primary mt-1 uppercase tracking-wide">Lead Developer & Technical Architect</span>
+          <span className="block text-sm font-semibold text-primary mt-1 uppercase tracking-wide">Full-Stack Engineer & Digital Strategy Expert</span>
         </h4>
         <div className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-5 space-y-2">
           <p>
@@ -33,6 +33,12 @@ export function AuthorBio() {
           </a>
           <a href="https://github.com/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer" className="text-muted-foreground text-sm font-semibold hover:text-foreground transition-colors flex items-center gap-2">
             GitHub Portfolio
+          </a>
+          <a href="https://profiles.wordpress.org/muhammadarsalanniazi/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground text-sm font-semibold hover:text-[#21759b] transition-colors flex items-center gap-2">
+            WordPress Profile
+          </a>
+          <a href="https://gravatar.com/muhammadarsalanniazi" target="_blank" rel="noopener noreferrer" className="text-muted-foreground text-sm font-semibold hover:text-amber-500 transition-colors flex items-center gap-2">
+            Gravatar
           </a>
         </div>
       </div>
