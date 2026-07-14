@@ -1,3 +1,16 @@
+# Release Notes - v4.1.0
+
+This release focuses on a major upgrade to the **Email Campaign Builder** tool, increasing its capacity by 4x.
+
+## 🚀 Enhancements
+
+### ✨ **Email Campaign Builder — 1000 Email Support**
+-   **Increased Email Limit:** The Email Campaign Builder now supports up to **1000 emails** per campaign, up from the previous limit of 250.
+-   **Increased Subjects & Paragraphs:** You can now add up to **1000 subjects** and **1000 paragraphs** for rotation, up from the previous limit of 250.
+-   **Updated FAQ:** The tool's FAQ section has been updated to reflect the new limits and capabilities.
+
+---
+
 # Release Notes - v4.0.0
 
 This release is a major milestone for Niazi Tools, introducing **four highly requested utilities** and comprehensive **SEO Optimization** (including Google Search Console verification support) to help the application rank higher and perform optimally on search engines.

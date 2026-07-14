@@ -314,11 +314,11 @@ const toolHelpContent = {
       faqs: [
           {
               question: "How many emails can I use? 🤔",
-              answer: "You can provide any number of emails. If you provide more than 250, a confirmation dialog will appear, and only the first 250 will be used for generation. Subjects, paragraphs, and times will be automatically matched to the number of emails you use."
+              answer: "You can provide up to 1000 emails! If you provide more than 1000, a confirmation dialog will appear, and only the first 1000 will be used for generation. Subjects, paragraphs, and times will be automatically matched to the number of emails you use."
           },
           {
               question: "How do the subjects and paragraphs work? 📋",
-              answer: "You can add up to 250 different subjects and 250 different paragraphs. The tool will cycle through them to create a varied campaign. For example, if you have 2 subjects, it will assign them as A, B, A, B, etc."
+              answer: "You can add up to 1000 different subjects and 1000 different paragraphs. The tool will cycle through them to create a varied campaign. For example, if you have 2 subjects, it will assign them as A, B, A, B, etc."
           },
           {
               question: "Why must the number of subjects and paragraphs be equal? ⚖️",
@@ -1595,7 +1595,7 @@ export default function Home() {
 
   // --- Campaign Builder ---
   const handleAddDynamicPair = (setter: React.Dispatch<React.SetStateAction<DynamicPair[]>>, pairs: DynamicPair[]) => {
-    if (pairs.length < 250) {
+    if (pairs.length < 1000) {
       setter([...pairs, { id: Date.now(), value: "" }]);
     }
   };
@@ -1648,7 +1648,7 @@ export default function Home() {
             
             setCampaignSubjects(prev => {
               const existingNonEmpty = prev.filter(p => p.value.trim());
-              const combined = [...existingNonEmpty, ...newPairs].slice(0, 250);
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 1000);
               return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
             });
         }).catch(err => {
@@ -1684,7 +1684,7 @@ export default function Home() {
             
             setCampaignParagraphs(prev => {
               const existingNonEmpty = prev.filter(p => p.value.trim());
-              const combined = [...existingNonEmpty, ...newPairs].slice(0, 250);
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 1000);
               return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
             });
         }).catch(err => {
@@ -1701,7 +1701,7 @@ export default function Home() {
   };
   
   const proceedToGenerateCampaign = () => {
-    const emails = campaignEmails.split('\n').map(e => e.trim()).filter(Boolean).slice(0, 250);
+    const emails = campaignEmails.split('\n').map(e => e.trim()).filter(Boolean).slice(0, 1000);
     const subjects = campaignSubjects.map(s => s.value.trim()).filter(Boolean);
     const paragraphs = campaignParagraphs.map(p => p.value.trim()).filter(Boolean);
 
@@ -1746,7 +1746,7 @@ export default function Home() {
 
   const handleGenerateCampaign = () => {
     const emailList = campaignEmails.split('\n').map(e => e.trim()).filter(Boolean);
-    if (emailList.length > 250) {
+    if (emailList.length > 1000) {
       setEmailLimitInfo({
         count: emailList.length,
         onConfirm: () => {
@@ -2866,7 +2866,7 @@ Like this one."
                     <Card>
                         <CardHeader>
                             <CardTitle>1. Emails</CardTitle>
-                            <CardDescription>Paste or upload emails. If more than 250 are provided, only the first 250 will be used.</CardDescription>
+                            <CardDescription>Paste or upload emails. If more than 1000 are provided, only the first 1000 will be used.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                              <Textarea
@@ -2896,7 +2896,7 @@ email2@example.com
                     <Card>
                          <CardHeader>
                             <CardTitle>2. Subjects</CardTitle>
-                            <CardDescription>Add up to 250 subject lines to rotate through.</CardDescription>
+                            <CardDescription>Add up to 1000 subject lines to rotate through.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                            <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
@@ -2916,7 +2916,7 @@ email2@example.com
                                     </div>
                                 ))}
                             </div>
-                            {campaignSubjects.length < 250 && (
+                            {campaignSubjects.length < 1000 && (
                                 <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignSubjects, campaignSubjects)}>
                                     <PlusCircle className="mr-2 h-4 w-4"/> Add Subject
                                 </Button>
@@ -2958,7 +2958,7 @@ email2@example.com
                                     </div>
                                 ))}
                             </div>
-                            {campaignParagraphs.length < 250 && (
+                            {campaignParagraphs.length < 1000 && (
                                 <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignParagraphs, campaignParagraphs)}>
                                     <PlusCircle className="mr-2 h-4 w-4"/> Add Paragraph
                                 </Button>
@@ -3782,7 +3782,7 @@ if (activeTool === 'duplicate-remover') {
             <AlertDialogHeader>
               <AlertDialogTitle>Email Limit Exceeded</AlertDialogTitle>
               <AlertDialogDescription>
-                You provided {emailLimitInfo?.count} emails. This tool will use the first 250 entries to generate the campaign. Do you want to continue?
+                You provided {emailLimitInfo?.count} emails. This tool will use the first 1000 entries to generate the campaign. Do you want to continue?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
