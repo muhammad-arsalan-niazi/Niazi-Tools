@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/footer";
 import { SchemaMarkup } from "@/components/schema-markup";
 import { Copyright } from "@/components/copyright";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://niazi-tools.vercel.app'),
