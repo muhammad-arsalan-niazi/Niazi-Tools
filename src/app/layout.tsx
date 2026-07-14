@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SchemaMarkup } from "@/components/schema-markup";
 import { Copyright } from "@/components/copyright";
@@ -78,6 +79,7 @@ export default function RootLayout({
         <SchemaMarkup />
       </head>
       <body className="font-body antialiased flex flex-col min-h-svh">
+        <Header />
         <div className="flex-1">{children}</div>
         <Footer />
         <Toaster />

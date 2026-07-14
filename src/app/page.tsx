@@ -3717,26 +3717,7 @@ if (activeTool === 'duplicate-remover') {
 
   return (
       <main className="relative flex flex-col items-center justify-start p-4 sm:p-6 md:p-8">
-        <header className="absolute top-6 left-6 right-6 z-50 flex justify-between items-center">
-            <ThemeToggle theme={theme} setTheme={setTheme} />
-            <div className="flex items-center gap-3">
-              <a href="https://github.com/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile">
-                <Button size="icon" className="rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-all hover:shadow-lg hover:shadow-primary/20">
-                  <Github className="text-white dark:text-black" />
-                </Button>
-              </a>
-              <a href="https://www.facebook.com/MuhammadArsalanNiazi.Official/" target="_blank" rel="noopener noreferrer" aria-label="Facebook Profile">
-                <Button size="icon" className="rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-all hover:shadow-lg hover:shadow-primary/20">
-                  <Facebook className="text-white dark:text-black" />
-                </Button>
-              </a>
-               <a href="https://www.linkedin.com/in/muhammad-arsalan-niazi/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile">
-                 <Button size="icon" className="rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition-all hover:shadow-lg hover:shadow-primary/20">
-                  <Linkedin className="text-white dark:text-black" />
-                </Button>
-              </a>
-            </div>
-        </header>
+
 
         <AlertDialog open={showNicknameDialog}>
           <AlertDialogContent>
