@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { PageHeader } from '@/components/page-header';
-import { Github, Facebook, Linkedin, Youtube, Code2, Briefcase } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Github, Facebook, Linkedin, Youtube, Code2, Briefcase, Globe, Zap } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
   title: 'Contact & About | Niazi Tools',
@@ -37,17 +38,72 @@ export default function ContactPage() {
                 I am a passionate <strong>Web Developer and Technical SEO Expert</strong> based in <strong>Sargodha, Pakistan</strong>. I built Niazi Tools to provide a fast, secure, and privacy-focused suite of utilities for professionals everywhere.
               </p>
               <div className="pt-2">
-                <h3 className="font-semibold text-foreground mb-2">My Professional Services Include:</h3>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">✨ Custom Next.js Web Apps</li>
-                  <li className="flex items-center gap-2">✨ WordPress Theme & Plugin Dev</li>
-                  <li className="flex items-center gap-2">✨ Technical SEO Optimization</li>
-                  <li className="flex items-center gap-2">✨ Speed & Performance Audits</li>
-                </ul>
+                <p className="font-semibold text-foreground mb-4">Connect directly for project inquiries:</p>
+                <div className="flex flex-wrap gap-3">
+                  <a href="https://linkedin.com/in/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" className="flex items-center gap-2"><Linkedin size={16} /> LinkedIn</Button>
+                  </a>
+                  <a href="https://github.com/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" className="flex items-center gap-2"><Github size={16} /> GitHub</Button>
+                  </a>
+                  <a href="https://profiles.wordpress.org/muhammad-arsalan-niazi/" target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" className="flex items-center gap-2">WordPress Profile</Button>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </Card>
+
+        {/* Detailed Services Section */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold font-headline mb-6 text-center">My Professional Services</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <Card className="hover:shadow-lg transition-all hover:border-primary/50 group">
+              <CardHeader>
+                <div className="rounded-lg bg-primary/10 p-3 w-fit mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Code2 className="text-primary h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-bold font-headline">Custom Next.js Web Apps</h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  I architect and build lightning-fast, highly scalable, and SEO-optimized modern web applications using Next.js, React, and Tailwind CSS. Perfect for SaaS products, complex dashboards, or specialized toolkits like Niazi Tools.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-all hover:border-primary/50 group">
+              <CardHeader>
+                <div className="rounded-lg bg-blue-500/10 p-3 w-fit mb-4 group-hover:bg-blue-500/20 transition-colors">
+                  <Globe className="text-blue-500 h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-bold font-headline">WordPress Development</h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  As a top-rated WordPress expert, I deliver custom theme development, robust plugin integration, and advanced headless WordPress setups. I ensure your site is easy to manage, incredibly fast, and secure against vulnerabilities.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-all hover:border-primary/50 group">
+              <CardHeader>
+                <div className="rounded-lg bg-emerald-500/10 p-3 w-fit mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                  <Zap className="text-emerald-500 h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-bold font-headline">Technical SEO & Audits</h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  I don't just build websites; I make them rank. I offer comprehensive technical SEO audits, Core Web Vitals optimization (100/100 PageSpeed scores), JSON-LD Schema implementation, and local/international ranking strategies.
+                </p>
+              </CardContent>
+            </Card>
+
+          </div>
+        </div>
 
         {/* CTA Banner */}
         <div className="bg-primary text-primary-foreground rounded-2xl p-8 md:p-12 text-center shadow-xl relative overflow-hidden">

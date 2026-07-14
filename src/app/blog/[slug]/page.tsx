@@ -92,11 +92,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       />
 
       <Card className="overflow-hidden shadow-xl border-none mb-12 animate-in fade-in-50 duration-700 bg-card">
-        {/* CSS-Styled Hero Banner - Reverting to subtle app-like scheme */}
-        <div className="h-48 w-full bg-muted/50 border-b flex items-center justify-center p-8 relative">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline text-foreground text-center relative z-10 tracking-tight leading-tight">
-            {tool.title}
-          </h1>
+        {/* Real Image Hero Banner for SEO */}
+        <div className="h-48 sm:h-64 w-full relative border-b overflow-hidden">
+          <img 
+            src="https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?q=80&w=1200&auto=format&fit=crop" 
+            alt={tool.title}
+            className="absolute inset-0 w-full h-full object-cover opacity-40 dark:opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+          <div className="absolute inset-0 flex items-center justify-center p-8">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-headline text-foreground text-center relative z-10 tracking-tight leading-tight drop-shadow-md">
+              {tool.title}
+            </h1>
+          </div>
         </div>
 
         <CardContent className="p-8 sm:p-12 max-w-none">
@@ -108,7 +116,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               Use this completely free tool right now in your browser. No sign-up required.
             </p>
             <Link href="/">
-              <Button size="lg" className="text-lg px-8 shadow-lg shadow-primary/25 hover:-translate-y-1 transition-transform">
+              <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 shadow-lg shadow-primary/25 hover:-translate-y-1 transition-transform">
                 Launch Tool Now &rarr;
               </Button>
             </Link>

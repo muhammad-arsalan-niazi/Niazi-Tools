@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
-import { ArrowLeft, Moon, Sun, Layers } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Layers, Menu, Home, BookOpen, Mail, FileText, Shield } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import Link from 'next/link';
 
 interface PageHeaderProps {
   title: string;
@@ -34,37 +36,74 @@ export function PageHeader({ title, description }: PageHeaderProps) {
 
   return (
     <div className="w-full mb-8 animate-in fade-in-50 duration-500">
-      <div className="flex justify-between items-center mb-6">
-        <Button
-          className="bg-gray-900 text-white dark:bg-gray-600 hover:bg-primary hover:text-primary-foreground hover:shadow-lg hover:shadow-primary/20 transition-all"
-          onClick={() => router.push('/')}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <span className="hidden sm:inline">Back to Home</span>
-          <span className="sm:hidden">Back</span>
-        </Button>
-
-        {/* Brand Logo for Subpages */}
+      {/* Top Brand & Actions Bar */}
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-border/40">
+        
+        {/* Brand Logo - Now on the left */}
         <div 
-          className="flex items-center justify-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" 
+          className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" 
           onClick={() => router.push('/')}
         >
-          <Layers className="text-primary h-6 w-6 sm:h-8 sm:w-8" />
-          <h2 className="text-xl sm:text-2xl font-headline tracking-wider bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient">
+          <Layers className="text-primary h-8 w-8" />
+          <h2 className="text-2xl font-headline tracking-wider bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient">
             Niazi Tools
           </h2>
         </div>
 
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2">
+          {/* Desktop Nav Links (Optional, kept hidden for simplicity as requested mobile menu) */}
+          
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleTheme}
+            className="rounded-full shadow-md bg-background/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4 text-blue-400" />}
+          </Button>
+
+          {/* Mobile/Tablet Hamburger Menu */}
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full shadow-md">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 mt-2">
+                <DropdownMenuItem asChild>
+                  <Link href="/" className="flex items-center cursor-pointer w-full"><Home className="mr-2 h-4 w-4" /> Home / Tools</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/blog" className="flex items-center cursor-pointer w-full"><BookOpen className="mr-2 h-4 w-4" /> SEO Blog</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/contact" className="flex items-center cursor-pointer w-full"><Mail className="mr-2 h-4 w-4" /> Contact & About</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/privacy-policy" className="flex items-center cursor-pointer w-full"><Shield className="mr-2 h-4 w-4" /> Privacy Policy</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/terms-of-service" className="flex items-center cursor-pointer w-full"><FileText className="mr-2 h-4 w-4" /> Terms of Service</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+
+      {/* Back Button & Title Area */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
         <Button
-          variant="outline"
-          size="icon"
-          onClick={toggleTheme}
-          className="rounded-full shadow-md bg-background/50 backdrop-blur-sm border-primary/20 hover:border-primary/50 transition-all duration-300"
-          aria-label="Toggle theme"
+          variant="secondary"
+          size="sm"
+          className="w-fit bg-secondary/50 hover:bg-primary hover:text-primary-foreground transition-colors"
+          onClick={() => router.push('/')}
         >
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-amber-500" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-blue-400" />
-          <span className="sr-only">Toggle theme</span>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Tools
         </Button>
       </div>
       
