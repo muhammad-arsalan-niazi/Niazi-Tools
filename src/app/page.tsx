@@ -3827,15 +3827,15 @@ if (activeTool === 'duplicate-remover') {
             <>
               {/* Modern, Floating Hero Section */}
               <div className="relative w-full mb-24 pt-12 pb-16 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                {/* Background ambient glow */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-64 bg-primary/20 blur-[100px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30"></div>
+                {/* Background ambient glow with pulse animation */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-64 bg-primary/20 blur-[100px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30 animate-pulse duration-[3000ms]"></div>
                 
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-8 border border-primary/20 shadow-sm animate-bounce">
                   <span className="relative flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
                   </span>
-                  v6.0.0 Now Live - Completely Offline
+                  Next-Gen Utilities — 100% Private & Lightning Fast
                 </div>
 
                 <h1 className="text-5xl sm:text-7xl md:text-8xl font-black font-headline mb-6 tracking-tighter leading-none bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-xl">

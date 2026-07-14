@@ -15,10 +15,26 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="container mx-auto px-6 max-w-4xl py-12">
-      <PageHeader 
-        title="About Niazi Tools & The Author" 
-        description="Your all-in-one suite of free, offline-first utilities designed to make your daily text-processing tasks easier and faster. 🚀"
-      />
+      {/* Modern, Floating Contact Hero Section */}
+      <div className="relative w-full mb-16 pt-8 pb-12 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-64 bg-emerald-500/20 blur-[100px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30 animate-pulse duration-[3000ms]"></div>
+        
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-bold mb-8 border border-emerald-500/20 shadow-sm animate-bounce">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </span>
+          Let's Build Something Amazing
+        </div>
+
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black font-headline mb-6 tracking-tighter leading-none bg-gradient-to-r from-emerald-500 via-primary to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-xl">
+          About & Contact
+        </h1>
+        
+        <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
+          Your all-in-one suite of free, offline-first utilities designed to make your daily text-processing tasks easier and faster. 🚀
+        </p>
+      </div>
 
       <div className="space-y-12 animate-in fade-in-50 slide-in-from-bottom-4 duration-700">
         

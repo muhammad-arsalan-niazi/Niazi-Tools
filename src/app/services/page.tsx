@@ -99,31 +99,38 @@ export default function ServicesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-background to-blue-500/10 border border-primary/20 mb-20 p-8 sm:p-16 md:p-24 text-center shadow-2xl">
-        <div className="absolute inset-0 bg-primary/5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-background to-background opacity-50"></div>
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-headline mb-6 tracking-tight leading-tight">
-            Scale Your Business with{' '}
-            <span className="bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient">
-              World-Class Digital Solutions
-            </span>
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto">
-            I don't just build websites; I architect incredibly fast, highly-converting digital ecosystems that dominate local Sargodha searches and international markets.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#contact-me">
-              <Button size="lg" className="w-full sm:w-auto text-lg px-8 shadow-lg shadow-primary/25 hover:-translate-y-1 transition-transform">
-                Hire Me Today
-              </Button>
-            </a>
-            <a href="#core-services">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 hover:bg-muted">
-                Explore Services
-              </Button>
-            </a>
-          </div>
+      {/* Modern, Floating Services Hero Section */}
+      <div className="relative w-full mb-24 pt-16 pb-20 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        {/* Background ambient glow with pulse animation */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-72 bg-blue-500/20 blur-[120px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30 animate-pulse duration-[4000ms]"></div>
+        
+        <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-500/10 text-blue-500 text-sm font-bold mb-10 border border-blue-500/20 shadow-sm animate-bounce">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+          </span>
+          Accepting New Projects for 2026
+        </div>
+
+        <h1 className="text-5xl sm:text-7xl md:text-8xl font-black font-headline mb-8 tracking-tighter leading-none bg-gradient-to-r from-blue-500 via-primary to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-xl">
+          Scale Your Business
+        </h1>
+        
+        <p className="text-xl sm:text-2xl md:text-3xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light mb-12">
+          I don't just build websites; I architect incredibly fast, highly-converting digital ecosystems that dominate search rankings locally and internationally.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full sm:w-auto">
+          <a href="#contact-me" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: document.getElementById('contact-me')?.offsetTop || 2000, behavior: 'smooth' }); }} className="w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto h-16 px-10 text-xl font-bold rounded-full shadow-2xl shadow-blue-500/25 hover:scale-105 transition-transform bg-blue-600 hover:bg-blue-700 text-white">
+              Hire Me Today
+            </Button>
+          </a>
+          <a href="#core-services" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: document.getElementById('core-services')?.offsetTop || 800, behavior: 'smooth' }); }} className="w-full sm:w-auto">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 px-10 text-xl font-bold rounded-full hover:bg-muted transition-all border-2 border-border">
+              Explore Services
+            </Button>
+          </a>
         </div>
       </div>
 

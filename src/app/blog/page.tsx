@@ -33,10 +33,26 @@ export default function BlogIndexPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PageHeader 
-        title="SEO Tools & Utility Guides" 
-        description="Comprehensive guides on how to boost your productivity using our free, offline-first tools."
-      />
+      {/* Modern, Floating Blog Hero Section */}
+      <div className="relative w-full mb-16 pt-8 pb-12 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-64 bg-fuchsia-500/20 blur-[100px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30 animate-pulse duration-[3000ms]"></div>
+        
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 text-sm font-bold mb-8 border border-fuchsia-500/20 shadow-sm animate-bounce">
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fuchsia-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-fuchsia-500"></span>
+          </span>
+          Latest Guides & Tutorials
+        </div>
+
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black font-headline mb-6 tracking-tighter leading-none bg-gradient-to-r from-fuchsia-500 via-primary to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-xl">
+          SEO Tools & Utility Guides
+        </h1>
+        
+        <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light">
+          Comprehensive guides on how to boost your productivity using our free, offline-first tools.
+        </p>
+      </div>
 
       <div className="flex flex-col lg:flex-row gap-8 mt-12 animate-in fade-in-50 duration-700">
         
