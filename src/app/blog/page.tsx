@@ -63,10 +63,18 @@ export default function BlogIndexPage() {
           {toolsList.map(tool => (
             <Card key={tool.slug} id={tool.slug} className="overflow-hidden shadow-md hover:shadow-lg transition-all group border-primary/10">
               {/* Theme-Aware Banner */}
-              <div className="h-32 w-full bg-muted/50 border-b flex items-center justify-center p-6 relative overflow-hidden group-hover:bg-muted transition-colors duration-500">
-                <h2 className="text-xl sm:text-2xl font-bold font-headline text-foreground text-center relative z-10">
-                  {tool.title}
-                </h2>
+              <div className="h-40 w-full relative border-b overflow-hidden group-hover:opacity-90 transition-opacity duration-500">
+                <img 
+                  src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop" 
+                  alt="Tech Background"
+                  className="absolute inset-0 w-full h-full object-cover opacity-60 dark:opacity-40"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent"></div>
+                <div className="absolute inset-0 flex items-end justify-start p-6">
+                  <h2 className="text-xl sm:text-2xl font-bold font-headline text-foreground relative z-10 drop-shadow-md line-clamp-2">
+                    {tool.title}
+                  </h2>
+                </div>
               </div>
               
               <CardContent className="p-6 sm:p-8">

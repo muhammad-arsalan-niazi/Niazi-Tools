@@ -22,24 +22,28 @@ export function Footer() {
           {/* Navigation */}
           <div className="flex flex-col gap-3">
             <h4 className="font-semibold text-foreground">Navigation</h4>
-            <ul className="space-y-1">
-              <li className="mb-2">
-                <Link href="/" className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+            <ul className="space-y-3">
+              <li>
+                <Link href="/" className="group text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  <span className="w-0 overflow-hidden group-hover:w-4 group-hover:mr-2 text-blue-500 transition-all duration-300 ease-out">→</span>
                   Free Online Tools
                 </Link>
               </li>
-              <li className="mb-2">
-                <Link href="/blog" className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+              <li>
+                <Link href="/blog" className="group text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  <span className="w-0 overflow-hidden group-hover:w-4 group-hover:mr-2 text-blue-500 transition-all duration-300 ease-out">→</span>
                   Tool Guides & SEO Blog
                 </Link>
               </li>
-              <li className="mb-2">
-                <Link href="/services" className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+              <li>
+                <Link href="/services" className="group text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  <span className="w-0 overflow-hidden group-hover:w-4 group-hover:mr-2 text-blue-500 transition-all duration-300 ease-out">→</span>
                   Professional Services
                 </Link>
               </li>
-              <li className="mb-2">
-                <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+              <li>
+                <Link href="/contact" className="group text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  <span className="w-0 overflow-hidden group-hover:w-4 group-hover:mr-2 text-blue-500 transition-all duration-300 ease-out">→</span>
                   Contact & About
                 </Link>
               </li>
@@ -49,8 +53,20 @@ export function Footer() {
           {/* Legal */}
           <div className="flex flex-col gap-3">
             <h4 className="font-semibold text-foreground">Legal</h4>
-            <Link href="/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors text-sm">Terms of Service</Link>
-            <Link href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors text-sm">Privacy Policy</Link>
+            <ul className="space-y-3">
+              <li>
+                <Link href="/privacy-policy" className="group text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  <span className="w-0 overflow-hidden group-hover:w-4 group-hover:mr-2 text-blue-500 transition-all duration-300 ease-out">→</span>
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms-of-service" className="group text-muted-foreground hover:text-primary transition-colors text-sm flex items-center">
+                  <span className="w-0 overflow-hidden group-hover:w-4 group-hover:mr-2 text-blue-500 transition-all duration-300 ease-out">→</span>
+                  Terms of Service
+                </Link>
+              </li>
+            </ul>
           </div>
 
           {/* Connect */}

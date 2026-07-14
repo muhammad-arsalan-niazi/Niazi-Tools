@@ -3826,10 +3826,10 @@ if (activeTool === 'duplicate-remover') {
           {activeTool === null ? (
             <>
               {/* Awesome Animated Hero Banner (Only visible when no tool is selected) */}
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-background to-blue-500/10 border border-primary/20 mb-16 p-8 sm:p-16 text-center shadow-2xl animate-in fade-in zoom-in duration-700">
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-background to-blue-500/10 border border-primary/20 mb-20 p-8 sm:p-16 md:p-24 text-center shadow-2xl animate-in fade-in zoom-in duration-700">
                 <div className="absolute inset-0 bg-primary/5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-background to-background opacity-50"></div>
-                <div className="relative z-10">
-                  <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold font-headline mb-6 tracking-tight leading-tight bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-sm">
+                <div className="relative z-10 max-w-4xl mx-auto">
+                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold font-headline mb-6 tracking-tight leading-tight bg-gradient-to-r from-primary via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-animated-gradient drop-shadow-sm">
                     Niazi Tools
                   </h1>
                   <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
