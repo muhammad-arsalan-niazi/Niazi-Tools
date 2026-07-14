@@ -3847,7 +3847,7 @@ if (activeTool === 'duplicate-remover') {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full sm:w-auto">
-                  <a href="#tools-grid" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: document.getElementById('tools-grid')?.offsetTop || 500, behavior: 'smooth' }); }} className="w-full sm:w-auto">
+                  <a href="#tools-grid" className="w-full sm:w-auto">
                     <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full shadow-xl shadow-primary/20 hover:scale-105 transition-all">
                       Explore Tools &rarr;
                     </Button>

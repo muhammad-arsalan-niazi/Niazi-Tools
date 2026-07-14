@@ -121,12 +121,12 @@ export default function ServicesPage() {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full sm:w-auto">
-          <a href="#contact-me" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: document.getElementById('contact-me')?.offsetTop || 2000, behavior: 'smooth' }); }} className="w-full sm:w-auto">
+          <a href="#contact-me" className="w-full sm:w-auto">
             <Button size="lg" className="w-full sm:w-auto h-16 px-10 text-xl font-bold rounded-full shadow-2xl shadow-blue-500/25 hover:scale-105 transition-transform bg-blue-600 hover:bg-blue-700 text-white">
               Hire Me Today
             </Button>
           </a>
-          <a href="#core-services" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: document.getElementById('core-services')?.offsetTop || 800, behavior: 'smooth' }); }} className="w-full sm:w-auto">
+          <a href="#core-services" className="w-full sm:w-auto">
             <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 px-10 text-xl font-bold rounded-full hover:bg-muted transition-all border-2 border-border">
               Explore Services
             </Button>
