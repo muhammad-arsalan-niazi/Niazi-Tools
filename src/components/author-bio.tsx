@@ -12,16 +12,27 @@ export function AuthorBio() {
         />
       </div>
       <div className="text-center md:text-left">
-        <h4 className="text-xl font-bold font-headline mb-2">About the Author: Muhammad Arsalan Niazi</h4>
-        <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-          Muhammad Arsalan Niazi is a Top-Rated Web Developer and Technical SEO Expert based in Sargodha, Pakistan. He specializes in building high-performance Next.js web applications, custom WordPress themes, and enterprise SEO solutions for global clients.
-        </p>
-        <div className="flex items-center justify-center md:justify-start gap-4">
-          <a href="/contact" className="text-primary text-sm font-semibold hover:underline">
-            Work with me &rarr;
+        <h4 className="text-xl sm:text-2xl font-bold font-headline mb-3 text-foreground">
+          Muhammad Arsalan Niazi
+          <span className="block text-sm font-semibold text-primary mt-1 uppercase tracking-wide">Lead Developer & Technical Architect</span>
+        </h4>
+        <div className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-5 space-y-2">
+          <p>
+            I am a Top-Rated Full-Stack Web Developer and Technical SEO Expert based in Sargodha, Pakistan. With years of experience architecting high-performance digital ecosystems, I specialize in transforming complex business requirements into lightning-fast, scalable web applications.
+          </p>
+          <p>
+            My core expertise includes building custom <strong>Next.js & React</strong> applications, developing enterprise-grade <strong>WordPress and E-Commerce</strong> solutions, and engineering <strong>Technical SEO</strong> strategies that dominate global search rankings. Whether you need a complete SaaS platform, a high-converting landing page, or aggressive SEO growth, I deliver silicon-valley grade engineering tailored to your business goals.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+          <a href="/services" className="bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 transition-colors shadow-md">
+            Hire Me &rarr;
           </a>
-          <a href="https://github.com/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer" className="text-muted-foreground text-sm font-semibold hover:text-primary transition-colors">
-            GitHub Profile
+          <a href="https://www.linkedin.com/in/muhammad-arsalan-niazi/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground text-sm font-semibold hover:text-[#0A66C2] transition-colors flex items-center gap-2">
+            View LinkedIn
+          </a>
+          <a href="https://github.com/muhammad-arsalan-niazi" target="_blank" rel="noopener noreferrer" className="text-muted-foreground text-sm font-semibold hover:text-foreground transition-colors flex items-center gap-2">
+            GitHub Portfolio
           </a>
         </div>
       </div>

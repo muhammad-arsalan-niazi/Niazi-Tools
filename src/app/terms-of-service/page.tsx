@@ -16,55 +16,68 @@ export default function TermsOfServicePage() {
         title="Terms of Service" 
         description="Please read these terms carefully before using Niazi Tools."
       />
-      <div className="prose prose-slate dark:prose-invert max-w-none animate-in fade-in-50 duration-700 mt-8">
-        <h2>1. Acceptance of Terms</h2>
-        <p>
-          By accessing and using Niazi Tools, you accept and agree to be bound by the terms and provision of this agreement. 
-          If you do not agree to abide by these terms, please do not use this service.
-        </p>
+      <div className="grid gap-8 mt-12 animate-in fade-in-50 duration-700">
+        
+        <div className="bg-card border border-primary/20 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 font-headline text-8xl font-black text-primary group-hover:scale-110 transition-transform">01</div>
+          <h2 className="text-2xl font-bold font-headline mb-4 text-primary flex items-center gap-3">
+            <span className="bg-primary/10 text-primary w-10 h-10 rounded-full flex items-center justify-center text-lg">1</span>
+            Acceptance of Terms
+          </h2>
+          <p className="text-muted-foreground leading-relaxed text-lg z-10 relative">
+            By accessing and using Niazi Tools, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by these terms, please do not use this service.
+          </p>
+        </div>
 
-        <h2>2. Description of Service</h2>
-        <p>
-          Niazi Tools provides a suite of free, offline-first web-based utility tools for text processing, data extraction, 
-          and formatting. The tools run completely in your browser without sending your data to any external server.
-        </p>
+        <div className="bg-card border border-blue-500/20 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 font-headline text-8xl font-black text-blue-500 group-hover:scale-110 transition-transform">02</div>
+          <h2 className="text-2xl font-bold font-headline mb-4 text-blue-500 flex items-center gap-3">
+            <span className="bg-blue-500/10 text-blue-500 w-10 h-10 rounded-full flex items-center justify-center text-lg">2</span>
+            Description of Service
+          </h2>
+          <p className="text-muted-foreground leading-relaxed text-lg z-10 relative">
+            Niazi Tools provides a suite of free, offline-first web-based utility tools for text processing, data extraction, and formatting. The tools run completely in your browser without sending your data to any external server.
+          </p>
+        </div>
 
-        <h2>3. Use License</h2>
-        <p>
-          Permission is granted to temporarily use the materials (information or software) on Niazi Tools' website for personal, 
-          non-commercial, and commercial transitory viewing and usage.
-        </p>
-        <ul>
-          <li>The tools are provided free of charge.</li>
-          <li>You may not attempt to decompile or reverse engineer any software contained on the website.</li>
-          <li>You may not remove any copyright or other proprietary notations from the materials.</li>
-        </ul>
+        <div className="bg-card border border-amber-500/20 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 font-headline text-8xl font-black text-amber-500 group-hover:scale-110 transition-transform">03</div>
+          <h2 className="text-2xl font-bold font-headline mb-4 text-amber-500 flex items-center gap-3">
+            <span className="bg-amber-500/10 text-amber-500 w-10 h-10 rounded-full flex items-center justify-center text-lg">3</span>
+            Use License
+          </h2>
+          <p className="text-muted-foreground leading-relaxed text-lg z-10 relative mb-4">
+            Permission is granted to temporarily use the materials (information or software) on Niazi Tools' website for personal, non-commercial, and commercial transitory viewing and usage.
+          </p>
+          <ul className="list-disc list-inside text-muted-foreground text-lg space-y-2 z-10 relative ml-4">
+            <li>The tools are provided completely free of charge.</li>
+            <li>You may not attempt to decompile or reverse engineer any software.</li>
+            <li>You may not remove any copyright or other proprietary notations.</li>
+          </ul>
+        </div>
 
-        <h2>4. Disclaimer</h2>
-        <p>
-          The materials on Niazi Tools are provided on an 'as is' basis. Niazi Tools makes no warranties, expressed or implied, 
-          and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions 
-          of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
-        </p>
+        <div className="bg-card border border-emerald-500/20 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 font-headline text-8xl font-black text-emerald-500 group-hover:scale-110 transition-transform">04</div>
+          <h2 className="text-2xl font-bold font-headline mb-4 text-emerald-500 flex items-center gap-3">
+            <span className="bg-emerald-500/10 text-emerald-500 w-10 h-10 rounded-full flex items-center justify-center text-lg">4</span>
+            Disclaimer
+          </h2>
+          <p className="text-muted-foreground leading-relaxed text-lg z-10 relative">
+            The materials on Niazi Tools are provided on an 'as is' basis. Niazi Tools makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property.
+          </p>
+        </div>
 
-        <h2>5. Limitations</h2>
-        <p>
-          In no event shall Niazi Tools or its suppliers be liable for any damages (including, without limitation, damages for loss 
-          of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Niazi Tools, 
-          even if Niazi Tools or a Niazi Tools authorized representative has been notified orally or in writing of the possibility of such damage.
-        </p>
+        <div className="bg-card border border-fuchsia-500/20 rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 font-headline text-8xl font-black text-fuchsia-500 group-hover:scale-110 transition-transform">05</div>
+          <h2 className="text-2xl font-bold font-headline mb-4 text-fuchsia-500 flex items-center gap-3">
+            <span className="bg-fuchsia-500/10 text-fuchsia-500 w-10 h-10 rounded-full flex items-center justify-center text-lg">5</span>
+            Limitations
+          </h2>
+          <p className="text-muted-foreground leading-relaxed text-lg z-10 relative">
+            In no event shall Niazi Tools or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on Niazi Tools.
+          </p>
+        </div>
 
-        <h2>6. Revisions and Errata</h2>
-        <p>
-          The materials appearing on Niazi Tools could include technical, typographical, or photographic errors. Niazi Tools does 
-          not warrant that any of the materials on its website are accurate, complete, or current. Niazi Tools may make changes 
-          to the materials contained on its website at any time without notice.
-        </p>
-
-        <h2>7. Contact Us</h2>
-        <p>
-          If you have any questions about these Terms, please contact us via our <a href="/contact" className="text-primary hover:underline">Contact Page</a>.
-        </p>
       </div>
     </div>
   );

@@ -39,6 +39,7 @@ export default function ServicesPage() {
     'name': 'Muhammad Arsalan Niazi - Web & SEO Expert',
     'image': 'https://avatars.githubusercontent.com/u/143963135?v=4',
     'description': 'Expert Custom Web Development, WordPress E-Commerce solutions, and aggressive Technical SEO services.',
+    'telephone': '+92-300-0000000', // Update this with your actual phone number
     'address': {
       '@type': 'PostalAddress',
       'streetAddress': 'Maqam e hayat',
