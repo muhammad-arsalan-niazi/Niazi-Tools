@@ -41,7 +41,7 @@ export const metadata: Metadata = {
       { url: '/favicon/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
       { url: '/favicon/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
       { url: '/favicon/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
-      { url: '/favicon/favicon.ico' },
+      { url: '/favicon.ico' },
       { url: '/icon.svg', type: 'image/svg+xml' }
     ],
     apple: [
