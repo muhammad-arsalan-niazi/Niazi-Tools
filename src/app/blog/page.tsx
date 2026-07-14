@@ -23,7 +23,13 @@ export default function BlogIndexPage() {
       '@type': 'BlogPosting',
       'headline': tool.title,
       'url': `https://niazi-tools.vercel.app/blog/${tool.slug}`,
-      'datePublished': tool.publishedDate
+      'datePublished': tool.publishedDate,
+      'author': {
+        '@type': 'Person',
+        'name': 'Muhammad Arsalan Niazi',
+        'url': 'https://niazi-tools.vercel.app/contact'
+      },
+      'image': 'https://niazi-tools.vercel.app/favicon/android-chrome-512x512.png'
     }))
   };
 
