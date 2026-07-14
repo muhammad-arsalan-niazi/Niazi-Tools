@@ -17,7 +17,12 @@ export default function ContactPage() {
     <div className="container mx-auto px-6 max-w-4xl py-12">
       {/* Modern, Floating Contact Hero Section */}
       <div className="relative w-full mb-16 pt-8 pb-12 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-64 bg-emerald-500/20 blur-[100px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30 animate-pulse duration-[3000ms]"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-64 bg-emerald-500/20 blur-[100px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30 animate-pulse"></div>
+        
+        {/* Decorative moving bubbles */}
+        <div className="absolute top-10 left-[10%] w-24 h-24 bg-primary/20 rounded-full blur-xl -z-10 pointer-events-none animate-bounce" style={{ animationDuration: '4s' }}></div>
+        <div className="absolute bottom-10 right-[15%] w-32 h-32 bg-cyan-400/20 rounded-full blur-xl -z-10 pointer-events-none animate-pulse" style={{ animationDuration: '5s' }}></div>
+        <div className="absolute top-20 right-[25%] w-16 h-16 bg-emerald-500/30 rounded-full blur-lg -z-10 pointer-events-none animate-bounce" style={{ animationDuration: '3s' }}></div>
         
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-bold mb-8 border border-emerald-500/20 shadow-sm animate-bounce">
           <span className="relative flex h-3 w-3">

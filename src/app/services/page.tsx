@@ -102,7 +102,12 @@ export default function ServicesPage() {
       {/* Modern, Floating Services Hero Section */}
       <div className="relative w-full mb-24 pt-16 pb-20 flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
         {/* Background ambient glow with pulse animation */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-72 bg-blue-500/20 blur-[120px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30 animate-pulse duration-[4000ms]"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl h-72 bg-blue-500/20 blur-[120px] rounded-full -z-10 pointer-events-none opacity-50 dark:opacity-30 animate-pulse"></div>
+        
+        {/* Decorative moving bubbles */}
+        <div className="absolute top-10 left-[10%] w-24 h-24 bg-primary/20 rounded-full blur-xl -z-10 pointer-events-none animate-bounce" style={{ animationDuration: '4s' }}></div>
+        <div className="absolute bottom-10 right-[15%] w-32 h-32 bg-cyan-400/20 rounded-full blur-xl -z-10 pointer-events-none animate-pulse" style={{ animationDuration: '5s' }}></div>
+        <div className="absolute top-20 right-[25%] w-16 h-16 bg-blue-500/30 rounded-full blur-lg -z-10 pointer-events-none animate-bounce" style={{ animationDuration: '3s' }}></div>
         
         <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-500/10 text-blue-500 text-sm font-bold mb-10 border border-blue-500/20 shadow-sm animate-bounce">
           <span className="relative flex h-3 w-3">
@@ -122,12 +127,12 @@ export default function ServicesPage() {
         
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center w-full sm:w-auto">
           <a href="#contact-me" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto h-16 px-10 text-xl font-bold rounded-full shadow-2xl shadow-blue-500/25 hover:scale-105 transition-transform bg-blue-600 hover:bg-blue-700 text-white">
+            <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg sm:h-16 sm:px-10 sm:text-xl font-bold rounded-full shadow-2xl shadow-blue-500/25 hover:scale-105 transition-transform bg-blue-600 hover:bg-blue-700 text-white">
               Hire Me Today
             </Button>
           </a>
           <a href="#core-services" className="w-full sm:w-auto">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 px-10 text-xl font-bold rounded-full hover:bg-muted transition-all border-2 border-border">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg sm:h-16 sm:px-10 sm:text-xl font-bold rounded-full hover:bg-muted transition-all border-2 border-border">
               Explore Services
             </Button>
           </a>
@@ -349,13 +354,13 @@ export default function ServicesPage() {
         </div>
       </div>
 
-      {/* Author Bio Section - Separated completely from the layout box */}
-      <div className="mb-24 relative overflow-hidden bg-muted/30 rounded-3xl p-8 sm:p-12 border border-border/50">
+      {/* Author Bio Section - Open Modern Layout */}
+      <div className="mb-24">
         <div className="text-center mb-10 max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold font-headline mb-4">Meet Your Developer</h2>
           <p className="text-muted-foreground text-lg">When you hire me, you get a dedicated technical partner who cares deeply about the success of your business.</p>
         </div>
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-5xl mx-auto">
            <AuthorBio />
         </div>
       </div>

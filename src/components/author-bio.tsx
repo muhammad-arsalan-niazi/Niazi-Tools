@@ -14,7 +14,7 @@ export function AuthorBio() {
       <div className="text-center md:text-left">
         <h4 className="text-xl sm:text-2xl font-bold font-headline mb-3 text-foreground">
           Muhammad Arsalan Niazi
-          <span className="block text-sm font-semibold text-primary mt-1 uppercase tracking-wide">Full-Stack Developer & Digital Strategy Expert</span>
+          <span className="block text-sm font-semibold text-primary mt-1 uppercase tracking-wide">Full-Stack Developer & Solutions Architect</span>
         </h4>
         <div className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-5 space-y-2">
           <p>
