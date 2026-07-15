@@ -1,4 +1,4 @@
-# Niazi Tools - Version 6.0.0
+# Niazi Tools - Version 6.5.0
 
 A comprehensive, lightning-fast collection of free online tools for text processing, data extraction, formatting, and conversion.
 
@@ -15,7 +15,7 @@ Welcome to **Niazi Tools**, a powerful and privacy-focused web application desig
 
 ## 🛠️ The Ultimate Utility Toolkit
 
-Niazi Tools currently offers the following 18 powerful offline utilities:
+Niazi Tools currently offers the following 20 powerful offline utilities:
 
 ### 1. 📋 Copyable Lines
 Convert a large block of text into a list of individual lines. Each line can be edited, deleted, or copied with a single click, either marking it as done or removing it from the list. Perfect for working through lists, tasks, or data.
@@ -70,6 +70,12 @@ Convert standard Markdown text into raw HTML tags. This makes it incredibly easy
 
 ### 18. 🧼 Whitespace Remover
 Clean up your text by removing extra spaces between words, reducing double spaces, and stripping out blank lines. Ideal for cleaning up raw data and code files.
+
+### 19. 🚀 Campaign Builder (No Timer)
+Assemble campaign data just like the regular Campaign Builder, but completely skip the time interval configuration for simpler batch processing.
+
+### 20. ⏱️ Campaign Builder (Custom Timer)
+Gain complete control over your campaign generation by uploading a custom `.txt` file containing your exact time intervals. Perfect for precision scheduling.
 
 ## 🚀 Technology Stack
 

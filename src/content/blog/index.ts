@@ -265,5 +265,23 @@ export const toolsList: BlogPost[] = [
     keywords: ['whitespace remover', 'free online tool', 'niazi tools'],
     content: generateToolContent('Whitespace Remover', 'Clean up formatting by removing extra spaces and empty lines.', generateFaqs('Whitespace Remover', 'Clean up formatting by removing extra spaces and empty lines.')),
     faqs: generateFaqs('Whitespace Remover', 'Clean up formatting by removing extra spaces and empty lines.')
+  },
+  { 
+    slug: 'campaign-builder-no-timer', 
+    title: 'Free Campaign Builder (No Timer) Online Tool', 
+    description: 'Assemble campaign data effortlessly without configuring any time intervals.',
+    publishedDate: '2024-01-01T00:00:00Z',
+    keywords: ['campaign builder no timer', 'email campaign', 'free online tool', 'niazi tools'],
+    content: generateToolContent('Campaign Builder (No Timer)', 'Assemble campaign data effortlessly without configuring any time intervals.', generateFaqs('Campaign Builder (No Timer)', 'Assemble campaign data effortlessly without configuring any time intervals.')),
+    faqs: generateFaqs('Campaign Builder (No Timer)', 'Assemble campaign data effortlessly without configuring any time intervals.')
+  },
+  { 
+    slug: 'campaign-builder-custom-timer', 
+    title: 'Free Campaign Builder (Custom Timer) Online Tool', 
+    description: 'Assemble campaign data with full control by uploading custom timer intervals.',
+    publishedDate: '2024-01-01T00:00:00Z',
+    keywords: ['campaign builder custom timer', 'email campaign custom time', 'free online tool', 'niazi tools'],
+    content: generateToolContent('Campaign Builder (Custom Timer)', 'Assemble campaign data with full control by uploading custom timer intervals.', generateFaqs('Campaign Builder (Custom Timer)', 'Assemble campaign data with full control by uploading custom timer intervals.')),
+    faqs: generateFaqs('Campaign Builder (Custom Timer)', 'Assemble campaign data with full control by uploading custom timer intervals.')
   }
 ];

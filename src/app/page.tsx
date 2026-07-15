@@ -133,6 +133,8 @@ type ActiveTool =
   "time-interval-generator" | 
   "line-repeater" | 
   "campaign-builder" | 
+  "campaign-builder-no-timer" |
+  "campaign-builder-custom-timer" |
   "list-sorter" |
   "case-converter" |
   "counter" |
@@ -330,6 +332,32 @@ const toolHelpContent = {
           }
       ]
     },
+    'campaign-builder-no-timer': {
+      description: "Assemble campaign data without time intervals. 📧 Combine a list of emails with rotating subjects and paragraphs. The output provides separate copyable fields for easy use in your email client.",
+      faqs: [
+          {
+              question: "How many emails can I use? 🤔",
+              answer: "You can provide up to 1000 emails! If you provide more than 1000, a confirmation dialog will appear, and only the first 1000 will be used for generation."
+          },
+          {
+              question: "Why must the number of subjects and paragraphs be equal? ⚖️",
+              answer: "This is to ensure a predictable and balanced rotation. The first subject will always be paired with the first paragraph, the second with the second, and so on."
+          }
+      ]
+    },
+    'campaign-builder-custom-timer': {
+      description: "Assemble campaign data with custom timers. 📧 Combine a list of emails with rotating subjects and paragraphs, and upload a .txt file containing specific time slots for each row.",
+      faqs: [
+          {
+              question: "How do custom timers work? ⏰",
+              answer: "You upload a text file where each line contains a specific time slot. The number of timers uploaded must exactly match the number of paragraphs you use."
+          },
+          {
+              question: "How is the final output formatted? 📝",
+              answer: "The output is a list of numbered rows containing Email, Subject, Paragraph, and Time based on your uploaded list."
+          }
+      ]
+    },
     'list-sorter': {
         description: "An essential utility for organizing text lists. Paste your list and instantly sort it alphabetically, numerically, reverse the order, or shuffle it randomly.",
         faqs: [
@@ -466,6 +494,32 @@ const toolHelpContent = {
                 answer: "Standard line breaks are preserved, but multiple consecutive empty lines are completely removed."
             }
         ]
+    },
+    'campaign-builder-no-timer': {
+        description: "Assemble campaign data just like the regular Campaign Builder, but completely skip the time interval configuration for simpler batch processing.",
+        faqs: [
+            {
+                question: "How do I upload files? 📁",
+                answer: "Click the 'Upload' buttons in any of the sections to select .txt files. Your content will instantly populate the input areas."
+            },
+            {
+                question: "Why must subjects and paragraphs match? ⚖️",
+                answer: "The tool generates pairs of subjects and paragraphs. Having mismatched counts would lead to some paragraphs missing subjects or vice-versa."
+            }
+        ]
+    },
+    'campaign-builder-custom-timer': {
+        description: "Gain complete control over your campaign generation by uploading a custom .txt file containing your exact time intervals. Perfect for precision scheduling.",
+        faqs: [
+            {
+                question: "How should my custom timer file be formatted? ⏱️",
+                answer: "Your uploaded .txt file should have exactly one time interval per line. The total number of lines must exactly match your paragraph count."
+            },
+            {
+                question: "Why am I getting a validation error? 🚫",
+                answer: "You will get an error if the number of lines in your timer file does not perfectly match the number of paragraphs you've provided."
+            }
+        ]
     }
 };
 
@@ -569,6 +623,13 @@ export default function Home() {
   const campaignBuilderEmailsRef = useRef<HTMLInputElement>(null);
   const campaignBuilderSubjectsRef = useRef<HTMLInputElement>(null);
   const campaignBuilderParagraphsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderNoTimerEmailsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderNoTimerSubjectsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderNoTimerParagraphsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderCustomTimerEmailsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderCustomTimerSubjectsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderCustomTimerParagraphsRef = useRef<HTMLInputElement>(null);
+  const campaignBuilderCustomTimerFileRef = useRef<HTMLInputElement>(null);
   const paragraphFileInputRef = useRef<HTMLInputElement>(null);
 
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
@@ -623,6 +684,27 @@ export default function Home() {
   const [campaignTimeInterval, setCampaignTimeInterval] = useState(5);
   const [editingCampaignItemId, setEditingCampaignItemId] = useState<string | null>(null);
   const [editingCampaignItemData, setEditingCampaignItemData] = useState<Partial<CampaignLineItem>>({});
+
+  // State for Campaign Builder (No Timer) tool
+  const [campaignNoTimerEmails, setCampaignNoTimerEmails] = useState("");
+  const [campaignNoTimerSubjects, setCampaignNoTimerSubjects] = useState<DynamicPair[]>([{ id: Date.now(), value: '' }]);
+  const [campaignNoTimerParagraphs, setCampaignNoTimerParagraphs] = useState<DynamicPair[]>([{ id: Date.now(), value: '' }]);
+  const [campaignNoTimerOutput, setCampaignNoTimerOutput] = useState<CampaignLineItem[]>([]);
+  const [campaignNoTimerHasGenerated, setCampaignNoTimerHasGenerated] = useState(false);
+  const [campaignNoTimerCopyAction, setCampaignNoTimerCopyAction] = useState<CampaignCopyAction>("mark");
+  const [editingCampaignNoTimerItemId, setEditingCampaignNoTimerItemId] = useState<string | null>(null);
+  const [editingCampaignNoTimerItemData, setEditingCampaignNoTimerItemData] = useState<Partial<CampaignLineItem>>({});
+
+  // State for Campaign Builder (Custom Timer) tool
+  const [campaignCustomTimerEmails, setCampaignCustomTimerEmails] = useState("");
+  const [campaignCustomTimerSubjects, setCampaignCustomTimerSubjects] = useState<DynamicPair[]>([{ id: Date.now(), value: '' }]);
+  const [campaignCustomTimerParagraphs, setCampaignCustomTimerParagraphs] = useState<DynamicPair[]>([{ id: Date.now(), value: '' }]);
+  const [campaignCustomTimerFile, setCampaignCustomTimerFile] = useState<DynamicPair[]>([{ id: Date.now(), value: '' }]);
+  const [campaignCustomTimerOutput, setCampaignCustomTimerOutput] = useState<CampaignLineItem[]>([]);
+  const [campaignCustomTimerHasGenerated, setCampaignCustomTimerHasGenerated] = useState(false);
+  const [campaignCustomTimerCopyAction, setCampaignCustomTimerCopyAction] = useState<CampaignCopyAction>("mark");
+  const [editingCampaignCustomTimerItemId, setEditingCampaignCustomTimerItemId] = useState<string | null>(null);
+  const [editingCampaignCustomTimerItemData, setEditingCampaignCustomTimerItemData] = useState<Partial<CampaignLineItem>>({});
 
 
   // State for Download Dialog
@@ -1827,6 +1909,457 @@ export default function Home() {
     setEditingCampaignItemId(null);
   };
 
+  // --- Campaign Builder (No Timer) ---
+  const handleCampaignNoTimerFileUpload = (event: React.ChangeEvent<HTMLInputElement>, field: 'emails' | 'subjects' | 'paragraphs') => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+  
+    if (field === 'emails') {
+        const file = files[0];
+        if (file.type !== 'text/plain') { event.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            if (content) {
+                setCampaignNoTimerEmails(prev => prev ? `${prev}\n${content}` : content);
+            }
+        };
+        reader.readAsText(file);
+    } else if (field === 'subjects') {
+        const fileReadPromises = Array.from(files).map(file => {
+            return new Promise<string>((resolve, reject) => {
+                if (file.type === 'text/plain') {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target?.result as string);
+                    reader.onerror = e => reject(e);
+                    reader.readAsText(file);
+                } else {
+                    resolve('');
+                }
+            });
+        });
+
+        Promise.all(fileReadPromises).then(contents => {
+            const validContents = contents.join('\n').split('\n').map(line => line.trim()).filter(Boolean);
+            if (validContents.length === 0) return;
+
+            const newPairs = validContents.map(content => ({
+                id: Date.now() + Math.random(),
+                value: content
+            }));
+            
+            setCampaignNoTimerSubjects(prev => {
+              const existingNonEmpty = prev.filter(p => p.value.trim());
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 1000);
+              return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+        }).catch(err => {
+            console.error("Failed to read campaign no-timer subjects files:", err);
+            toast({
+                title: "Error Reading Files",
+                description: "There was an issue processing one or more of your subject files.",
+                variant: "destructive",
+            });
+        });
+    } else if (field === 'paragraphs') {
+        const fileReadPromises = Array.from(files).map(file => {
+            return new Promise<string>((resolve, reject) => {
+                if (file.type === 'text/plain') {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target?.result as string);
+                    reader.onerror = e => reject(e);
+                    reader.readAsText(file);
+                } else {
+                    resolve('');
+                }
+            });
+        });
+
+        Promise.all(fileReadPromises).then(contents => {
+            const validContents = contents.filter(Boolean);
+            if (validContents.length === 0) return;
+
+            const newPairs = validContents.map(content => ({
+                id: Date.now() + Math.random(),
+                value: content
+            }));
+            
+            setCampaignNoTimerParagraphs(prev => {
+              const existingNonEmpty = prev.filter(p => p.value.trim());
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 1000);
+              return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+        }).catch(err => {
+            console.error("Failed to read campaign no-timer paragraphs files:", err);
+            toast({
+                title: "Error Reading Files",
+                description: "There was an issue processing one or more of your paragraph files.",
+                variant: "destructive",
+            });
+        });
+    }
+
+    event.target.value = '';
+  };
+  
+  const proceedToGenerateCampaignNoTimer = () => {
+    const emails = campaignNoTimerEmails.split('\n').map(e => e.trim()).filter(Boolean).slice(0, 1000);
+    const subjects = campaignNoTimerSubjects.map(s => s.value.trim()).filter(Boolean);
+    const paragraphs = campaignNoTimerParagraphs.map(p => p.value.trim()).filter(Boolean);
+
+    if (emails.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one email address.", variant: "destructive" });
+        return;
+    }
+    if (subjects.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one subject.", variant: "destructive" });
+        return;
+    }
+    if (paragraphs.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one paragraph.", variant: "destructive" });
+        return;
+    }
+    if (subjects.length !== paragraphs.length) {
+        toast({ title: "Validation Error", description: "The number of subjects must be equal to the number of paragraphs.", variant: "destructive" });
+        return;
+    }
+
+    const generatedOutput: CampaignLineItem[] = [];
+
+    for (let i = 0; i < emails.length; i++) {
+        generatedOutput.push({
+            id: `${Date.now()}-${i}`,
+            email: emails[i],
+            subject: subjects[i % subjects.length],
+            paragraph: paragraphs[i % paragraphs.length],
+            time: null,
+            copiedFields: new Set(),
+        });
+    }
+    
+    setCampaignNoTimerOutput(generatedOutput);
+    setCampaignNoTimerHasGenerated(true);
+    toast({
+        title: "Campaign Generated",
+        description: `Successfully generated ${generatedOutput.length} campaign lines without timers.`,
+    });
+  }
+
+  const handleGenerateCampaignNoTimer = () => {
+    const emailList = campaignNoTimerEmails.split('\n').map(e => e.trim()).filter(Boolean);
+    if (emailList.length > 1000) {
+      setEmailLimitInfo({
+        count: emailList.length,
+        onConfirm: () => {
+          setShowEmailLimitDialog(false);
+          proceedToGenerateCampaignNoTimer();
+        }
+      });
+      setShowEmailLimitDialog(true);
+    } else {
+      proceedToGenerateCampaignNoTimer();
+    }
+  };
+  
+  const handleClearCampaignBuilderNoTimer = () => {
+    setCampaignNoTimerEmails("");
+    setCampaignNoTimerSubjects([{ id: Date.now(), value: "" }]);
+    setCampaignNoTimerParagraphs([{ id: Date.now(), value: "" }]);
+    setCampaignNoTimerOutput([]);
+    setCampaignNoTimerHasGenerated(false);
+  };
+  
+  const handleCampaignNoTimerFieldCopied = (id: string, field: keyof Omit<CampaignLineItem, 'id' | 'copiedFields'>) => {
+    if (campaignNoTimerCopyAction === 'mark') {
+        setCampaignNoTimerOutput(prev => prev.map(item => {
+            if (item.id === id) {
+                const newCopiedFields = new Set(item.copiedFields);
+                newCopiedFields.add(field);
+                return { ...item, copiedFields: newCopiedFields };
+            }
+            return item;
+        }));
+        return;
+    }
+
+    if (campaignNoTimerCopyAction === 'remove_field') {
+        setCampaignNoTimerOutput(prev => {
+            const nextState = prev.map(item => {
+                if (item.id === id) {
+                    const newItem = { ...item, [field]: null };
+                    const remainingFields = (Object.keys(newItem) as Array<keyof CampaignLineItem>)
+                        .filter(key => key !== 'id' && key !== 'copiedFields' && newItem[key] !== null);
+                    if (remainingFields.length === 0) return null; 
+                    return newItem;
+                }
+                return item;
+            }).filter(Boolean) as CampaignLineItem[];
+            return nextState;
+        });
+    }
+  };
+
+  const handleStartEditCampaignNoTimerItem = (item: CampaignLineItem) => {
+    setEditingCampaignNoTimerItemId(item.id);
+    setEditingCampaignNoTimerItemData({
+      email: item.email || '',
+      subject: item.subject || '',
+      paragraph: item.paragraph || '',
+    });
+  };
+  
+  const handleSaveCampaignNoTimerItemEdit = (id: string) => {
+    setCampaignNoTimerOutput(prev => prev.map(item =>
+        item.id === id ? { ...item, ...editingCampaignNoTimerItemData, copiedFields: new Set() } as CampaignLineItem : item
+    ));
+    setEditingCampaignNoTimerItemId(null);
+  };
+  
+  const handleCancelCampaignNoTimerItemEdit = () => {
+    setEditingCampaignNoTimerItemId(null);
+  };
+
+  // --- Campaign Builder (Custom Timer) ---
+  const handleCampaignCustomTimerFileUpload = (event: React.ChangeEvent<HTMLInputElement>, field: 'emails' | 'subjects' | 'paragraphs' | 'timers') => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+  
+    if (field === 'emails') {
+        const file = files[0];
+        if (file.type !== 'text/plain') { event.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            if (content) {
+                setCampaignCustomTimerEmails(prev => prev ? `${prev}\n${content}` : content);
+            }
+        };
+        reader.readAsText(file);
+    } else if (field === 'timers') {
+        const file = files[0];
+        if (file.type !== 'text/plain') { event.target.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            if (content) {
+                const validContents = content.split('\n').map(line => line.trim()).filter(Boolean);
+                const newPairs = validContents.map(c => ({
+                    id: Date.now() + Math.random(),
+                    value: c
+                }));
+                setCampaignCustomTimerFile(prev => {
+                  const existingNonEmpty = prev.filter(p => p.value.trim());
+                  const combined = [...existingNonEmpty, ...newPairs].slice(0, 1000);
+                  return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+                });
+            }
+        };
+        reader.readAsText(file);
+    } else if (field === 'subjects') {
+        const fileReadPromises = Array.from(files).map(file => {
+            return new Promise<string>((resolve, reject) => {
+                if (file.type === 'text/plain') {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target?.result as string);
+                    reader.onerror = e => reject(e);
+                    reader.readAsText(file);
+                } else {
+                    resolve('');
+                }
+            });
+        });
+
+        Promise.all(fileReadPromises).then(contents => {
+            const validContents = contents.join('\n').split('\n').map(line => line.trim()).filter(Boolean);
+            if (validContents.length === 0) return;
+
+            const newPairs = validContents.map(content => ({
+                id: Date.now() + Math.random(),
+                value: content
+            }));
+            
+            setCampaignCustomTimerSubjects(prev => {
+              const existingNonEmpty = prev.filter(p => p.value.trim());
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 1000);
+              return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+        }).catch(err => {
+            console.error("Failed to read campaign custom-timer subjects files:", err);
+            toast({
+                title: "Error Reading Files",
+                description: "There was an issue processing one or more of your subject files.",
+                variant: "destructive",
+            });
+        });
+    } else if (field === 'paragraphs') {
+        const fileReadPromises = Array.from(files).map(file => {
+            return new Promise<string>((resolve, reject) => {
+                if (file.type === 'text/plain') {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target?.result as string);
+                    reader.onerror = e => reject(e);
+                    reader.readAsText(file);
+                } else {
+                    resolve('');
+                }
+            });
+        });
+
+        Promise.all(fileReadPromises).then(contents => {
+            const validContents = contents.filter(Boolean);
+            if (validContents.length === 0) return;
+
+            const newPairs = validContents.map(content => ({
+                id: Date.now() + Math.random(),
+                value: content
+            }));
+            
+            setCampaignCustomTimerParagraphs(prev => {
+              const existingNonEmpty = prev.filter(p => p.value.trim());
+              const combined = [...existingNonEmpty, ...newPairs].slice(0, 1000);
+              return combined.length > 0 ? combined : [{ id: Date.now(), value: "" }];
+            });
+        }).catch(err => {
+            console.error("Failed to read campaign custom-timer paragraphs files:", err);
+            toast({
+                title: "Error Reading Files",
+                description: "There was an issue processing one or more of your paragraph files.",
+                variant: "destructive",
+            });
+        });
+    }
+
+    event.target.value = '';
+  };
+  
+  const proceedToGenerateCampaignCustomTimer = () => {
+    const emails = campaignCustomTimerEmails.split('\n').map(e => e.trim()).filter(Boolean).slice(0, 1000);
+    const subjects = campaignCustomTimerSubjects.map(s => s.value.trim()).filter(Boolean);
+    const paragraphs = campaignCustomTimerParagraphs.map(p => p.value.trim()).filter(Boolean);
+    const customTimers = campaignCustomTimerFile.map(t => t.value.trim()).filter(Boolean);
+
+    if (emails.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one email address.", variant: "destructive" });
+        return;
+    }
+    if (subjects.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one subject.", variant: "destructive" });
+        return;
+    }
+    if (paragraphs.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one paragraph.", variant: "destructive" });
+        return;
+    }
+    if (customTimers.length === 0) {
+        toast({ title: "Validation Error", description: "Please provide at least one custom timer.", variant: "destructive" });
+        return;
+    }
+    if (subjects.length !== paragraphs.length) {
+        toast({ title: "Validation Error", description: "The number of subjects must be equal to the number of paragraphs.", variant: "destructive" });
+        return;
+    }
+    if (customTimers.length !== paragraphs.length) {
+        toast({ title: "Validation Error", description: "The number of custom timers must be equal to the number of paragraphs.", variant: "destructive" });
+        return;
+    }
+
+    const generatedOutput: CampaignLineItem[] = [];
+
+    for (let i = 0; i < emails.length; i++) {
+        generatedOutput.push({
+            id: `${Date.now()}-${i}`,
+            email: emails[i],
+            subject: subjects[i % subjects.length],
+            paragraph: paragraphs[i % paragraphs.length],
+            time: customTimers[i % customTimers.length],
+            copiedFields: new Set(),
+        });
+    }
+    
+    setCampaignCustomTimerOutput(generatedOutput);
+    setCampaignCustomTimerHasGenerated(true);
+    toast({
+        title: "Campaign Generated",
+        description: `Successfully generated ${generatedOutput.length} campaign lines with custom timers.`,
+    });
+  }
+
+  const handleGenerateCampaignCustomTimer = () => {
+    const emailList = campaignCustomTimerEmails.split('\n').map(e => e.trim()).filter(Boolean);
+    if (emailList.length > 1000) {
+      setEmailLimitInfo({
+        count: emailList.length,
+        onConfirm: () => {
+          setShowEmailLimitDialog(false);
+          proceedToGenerateCampaignCustomTimer();
+        }
+      });
+      setShowEmailLimitDialog(true);
+    } else {
+      proceedToGenerateCampaignCustomTimer();
+    }
+  };
+  
+  const handleClearCampaignBuilderCustomTimer = () => {
+    setCampaignCustomTimerEmails("");
+    setCampaignCustomTimerSubjects([{ id: Date.now(), value: "" }]);
+    setCampaignCustomTimerParagraphs([{ id: Date.now(), value: "" }]);
+    setCampaignCustomTimerFile([{ id: Date.now(), value: "" }]);
+    setCampaignCustomTimerOutput([]);
+    setCampaignCustomTimerHasGenerated(false);
+  };
+  
+  const handleCampaignCustomTimerFieldCopied = (id: string, field: keyof Omit<CampaignLineItem, 'id' | 'copiedFields'>) => {
+    if (campaignCustomTimerCopyAction === 'mark') {
+        setCampaignCustomTimerOutput(prev => prev.map(item => {
+            if (item.id === id) {
+                const newCopiedFields = new Set(item.copiedFields);
+                newCopiedFields.add(field);
+                return { ...item, copiedFields: newCopiedFields };
+            }
+            return item;
+        }));
+        return;
+    }
+
+    if (campaignCustomTimerCopyAction === 'remove_field') {
+        setCampaignCustomTimerOutput(prev => {
+            const nextState = prev.map(item => {
+                if (item.id === id) {
+                    const newItem = { ...item, [field]: null };
+                    const remainingFields = (Object.keys(newItem) as Array<keyof CampaignLineItem>)
+                        .filter(key => key !== 'id' && key !== 'copiedFields' && newItem[key] !== null);
+                    if (remainingFields.length === 0) return null; 
+                    return newItem;
+                }
+                return item;
+            }).filter(Boolean) as CampaignLineItem[];
+            return nextState;
+        });
+    }
+  };
+
+  const handleStartEditCampaignCustomTimerItem = (item: CampaignLineItem) => {
+    setEditingCampaignCustomTimerItemId(item.id);
+    setEditingCampaignCustomTimerItemData({
+      email: item.email || '',
+      subject: item.subject || '',
+      paragraph: item.paragraph || '',
+      time: item.time || '',
+    });
+  };
+  
+  const handleSaveCampaignCustomTimerItemEdit = (id: string) => {
+    setCampaignCustomTimerOutput(prev => prev.map(item =>
+        item.id === id ? { ...item, ...editingCampaignCustomTimerItemData, copiedFields: new Set() } as CampaignLineItem : item
+    ));
+    setEditingCampaignCustomTimerItemId(null);
+  };
+  
+  const handleCancelCampaignCustomTimerItemEdit = () => {
+    setEditingCampaignCustomTimerItemId(null);
+  };
+
   const clearActiveTool = () => {
     switch(activeTool) {
       case 'copyable': handleClearAll(); break;
@@ -1838,6 +2371,8 @@ export default function Home() {
       case 'time-interval-generator': handleClearTimeGenerator(); break;
       case 'line-repeater': handleClearLineRepeater(); break;
       case 'campaign-builder': handleClearCampaignBuilder(); break;
+      case 'campaign-builder-no-timer': handleClearCampaignBuilderNoTimer(); break;
+      case 'campaign-builder-custom-timer': handleClearCampaignBuilderCustomTimer(); break;
       case 'list-sorter': setListSorterInput(''); setListSorterOutput(''); break;
       case 'case-converter': setCaseConverterInput(''); setCaseConverterOutput(''); break;
       case 'counter': setCounterInput(''); handleCounterUpdate(''); break;
@@ -3039,6 +3574,573 @@ email2@example.com
         </div>
     )
 }
+    if (activeTool === "campaign-builder-no-timer") {
+    return (
+        <div className="space-y-8">
+            {!campaignNoTimerHasGenerated ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Column 1: Emails and Subjects */}
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>1. Emails</CardTitle>
+                            <CardDescription>Paste or upload emails. If more than 1000 are provided, only the first 1000 will be used.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                             <Textarea
+                                id="campaign-no-timer-emails"
+                                placeholder="email1@example.com
+email2@example.com
+..."
+                                className="min-h-[150px] resize-y"
+                                value={campaignNoTimerEmails}
+                                onChange={(e) => setCampaignNoTimerEmails(e.target.value)}
+                            />
+                             <div className="flex flex-col sm:flex-row gap-2">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => handlePaste(setCampaignNoTimerEmails)}>
+                                    <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                                </Button>
+                                <div className="w-full">
+                                  <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderNoTimerEmailsRef.current?.click()}>
+                                      <Upload className="mr-2 h-4 w-4" /> Upload
+                                  </Button>
+                                  <input type="file" ref={campaignBuilderNoTimerEmailsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignNoTimerFileUpload(e, 'emails')} />
+                                  <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                         <CardHeader>
+                            <CardTitle>2. Subjects</CardTitle>
+                            <CardDescription>Add up to 1000 subject lines to rotate through.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                           <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
+                                {campaignNoTimerSubjects.map((pair, index) => (
+                                    <div key={pair.id} className="flex items-center gap-2">
+                                        <Input
+                                            id={`subject-no-timer-${pair.id}`}
+                                            placeholder={`Subject ${index + 1}`}
+                                            value={pair.value}
+                                            onChange={(e) => handleDynamicPairChange(pair.id, e.target.value, setCampaignNoTimerSubjects)}
+                                        />
+                                        {campaignNoTimerSubjects.length > 1 && (
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveDynamicPair(pair.id, setCampaignNoTimerSubjects)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {campaignNoTimerSubjects.length < 1000 && (
+                                <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignNoTimerSubjects, campaignNoTimerSubjects)}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Subject
+                                </Button>
+                            )}
+                             <div className="w-full">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderNoTimerSubjectsRef.current?.click()}>
+                                  <Upload className="mr-2 h-4 w-4" /> Upload Subjects
+                                </Button>
+                                <input type="file" ref={campaignBuilderNoTimerSubjectsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignNoTimerFileUpload(e, 'subjects')} multiple/>
+                                <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported. Each line is a subject.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Column 2: Paragraphs */}
+                <div className="space-y-6">
+                    <Card>
+                         <CardHeader>
+                            <CardTitle>3. Paragraphs</CardTitle>
+                            <CardDescription>Add paragraphs. Must match the number of subjects.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                           <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
+                                {campaignNoTimerParagraphs.map((pair, index) => (
+                                    <div key={pair.id} className="flex items-start gap-2">
+                                        <Textarea
+                                            id={`paragraph-no-timer-${pair.id}`}
+                                            placeholder={`Paragraph ${index + 1}`}
+                                            value={pair.value}
+                                            onChange={(e) => handleDynamicPairChange(pair.id, e.target.value, setCampaignNoTimerParagraphs)}
+                                            className="min-h-[80px]"
+                                        />
+                                        {campaignNoTimerParagraphs.length > 1 && (
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveDynamicPair(pair.id, setCampaignNoTimerParagraphs)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {campaignNoTimerParagraphs.length < 1000 && (
+                                <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignNoTimerParagraphs, campaignNoTimerParagraphs)}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Paragraph
+                                </Button>
+                            )}
+                            <div className="w-full">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderNoTimerParagraphsRef.current?.click()}>
+                                  <Upload className="mr-2 h-4 w-4" /> Upload Paragraphs
+                                </Button>
+                                <input type="file" ref={campaignBuilderNoTimerParagraphsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignNoTimerFileUpload(e, 'paragraphs')} multiple/>
+                                <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported. Each file is one paragraph.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+            ) : null}
+
+            {campaignNoTimerHasGenerated ? (
+                 <>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Settings className="h-4 w-4" />
+                            <Label>Copy Action</Label>
+                        </div>
+                        <RadioGroup value={campaignNoTimerCopyAction} onValueChange={(v: CampaignCopyAction) => setCampaignNoTimerCopyAction(v)} className="flex gap-4 sm:gap-8 flex-wrap">
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="mark" id="cbnt1" />
+                                <Label htmlFor="cbnt1" className="cursor-pointer">Mark field as copied</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="remove_field" id="cbnt3" />
+                                <Label htmlFor="cbnt3" className="cursor-pointer">Remove field on copy</Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
+                    <div className="mt-8">
+                        <Separator className="my-6" />
+                        {campaignNoTimerOutput.length > 0 ? (
+                            <>
+                                <h3 className="text-lg font-semibold text-center mb-4 text-foreground/80">
+                                    Your Campaign Lines ({campaignNoTimerOutput.length})
+                                </h3>
+                                <div className="space-y-4">
+                                    {campaignNoTimerOutput.map((item, index) => (
+                                      editingCampaignNoTimerItemId === item.id ? (
+                                        // EDITING STATE
+                                        <div key={item.id} className="p-4 border rounded-lg bg-accent/20 space-y-3">
+                                           <div className="flex items-center gap-2">
+                                              <Badge variant="secondary" className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold">{index + 1}</Badge>
+                                              <Input
+                                                value={editingCampaignNoTimerItemData.email || ''}
+                                                onChange={(e) => setEditingCampaignNoTimerItemData(d => ({ ...d, email: e.target.value }))}
+                                                className="font-semibold text-lg"
+                                              />
+                                           </div>
+                                           <div className="space-y-2">
+                                            <Label className="text-xs text-muted-foreground pl-1">Subject</Label>
+                                            <Input value={editingCampaignNoTimerItemData.subject || ''} onChange={(e) => setEditingCampaignNoTimerItemData(d => ({...d, subject: e.target.value}))} />
+                                            <Label className="text-xs text-muted-foreground pl-1">Paragraph</Label>
+                                            <Textarea value={editingCampaignNoTimerItemData.paragraph || ''} onChange={(e) => setEditingCampaignNoTimerItemData(d => ({...d, paragraph: e.target.value}))} className="min-h-[100px]" />
+                                           </div>
+                                           <div className="flex justify-end gap-2">
+                                              <Button variant="ghost" onClick={handleCancelCampaignNoTimerItemEdit}><X className="mr-2 h-4 w-4"/>Cancel</Button>
+                                              <Button onClick={() => handleSaveCampaignNoTimerItemEdit(item.id)}><Save className="mr-2 h-4 w-4"/>Save</Button>
+                                           </div>
+                                        </div>
+                                      ) : (
+                                        // DISPLAY STATE
+                                        <div key={item.id} className="p-4 border rounded-lg bg-card/50 space-y-3 relative group">
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                  <Badge variant="secondary" className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold">{index + 1}</Badge>
+                                                  {item.email && <p className="font-semibold text-lg truncate">{item.email}</p>}
+                                              </div>
+                                              <Button size="icon" variant="ghost" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleStartEditCampaignNoTimerItem(item)}>
+                                                <Pencil className="h-4 w-4"/>
+                                              </Button>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-1 gap-y-3 overflow-x-auto">
+                                              {item.email !== null && (
+                                                <div className="space-y-2 min-w-[250px]">
+                                                  <Label className="text-xs text-muted-foreground pl-1">Email</Label>
+                                                  <CopyableField
+                                                    text={item.email}
+                                                    onCopy={() => handleCampaignNoTimerFieldCopied(item.id, 'email')}
+                                                    isCopied={item.copiedFields.has('email')}
+                                                  />
+                                                </div>
+                                              )}
+                                              {item.subject !== null && (
+                                                <div className="space-y-2 min-w-[250px]">
+                                                  <Label className="text-xs text-muted-foreground pl-1">Subject</Label>
+                                                  <CopyableField
+                                                    text={item.subject}
+                                                    onCopy={() => handleCampaignNoTimerFieldCopied(item.id, 'subject')}
+                                                    isCopied={item.copiedFields.has('subject')}
+                                                  />
+                                                </div>
+                                              )}
+                                              {item.paragraph !== null && (
+                                                <div className="space-y-2 min-w-[250px]">
+                                                    <Label className="text-xs text-muted-foreground pl-1">Paragraph</Label>
+                                                    <div onClick={async (e) => {
+                                                          e.stopPropagation();
+                                                          if (campaignNoTimerCopyAction === 'mark' && item.copiedFields.has('paragraph')) return;
+                                                          try {
+                                                              await navigator.clipboard.writeText(item.paragraph || '');
+                                                              handleCampaignNoTimerFieldCopied(item.id, 'paragraph');
+                                                          } catch (err) {
+                                                              console.error("Failed to copy: ", err);
+                                                          }
+                                                        }}
+                                                        className={cn(
+                                                          "relative group/p flex items-start p-3 rounded-md border transition-all cursor-pointer bg-card hover:bg-accent/50",
+                                                          item.copiedFields.has('paragraph') && "bg-primary/10 opacity-70 cursor-not-allowed"
+                                                        )}
+                                                      >
+                                                        <p className={cn("flex-grow pr-8 text-sm whitespace-pre-wrap text-card-foreground", item.copiedFields.has('paragraph') && "line-through")}>
+                                                            {item.paragraph}
+                                                        </p>
+                                                        <div className="absolute top-2 right-2 flex items-center opacity-0 group-hover/p:opacity-100 transition-opacity">
+                                                            {item.copiedFields.has('paragraph') ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
+                                                        </div>
+                                                        {item.copiedFields.has('paragraph') && <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />}
+                                                    </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                        </div>
+                                      )
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="text-center text-muted-foreground py-8">
+                                <p>All items have been copied/removed.</p>
+                                <p className="text-sm">You can start over to generate a new list.</p>
+                            </div>
+                        )}
+                    </div>
+                </>
+            ) : null }
+
+            <div className="mt-8 flex flex-col gap-4">
+              {!campaignNoTimerHasGenerated ? (
+                <Button onClick={handleGenerateCampaignNoTimer} size="lg">
+                    <MailPlus className="mr-2 h-5 w-5" />
+                    Generate Campaign List
+                </Button>
+              ) : null}
+            </div>
+        </div>
+    )
+    }
+    
+    if (activeTool === "campaign-builder-custom-timer") {
+    return (
+        <div className="space-y-8">
+            {!campaignCustomTimerHasGenerated ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Column 1: Emails and Subjects */}
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>1. Emails</CardTitle>
+                            <CardDescription>Paste or upload emails. If more than 1000 are provided, only the first 1000 will be used.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                             <Textarea
+                                id="campaign-custom-timer-emails"
+                                placeholder="email1@example.com
+email2@example.com
+..."
+                                className="min-h-[150px] resize-y"
+                                value={campaignCustomTimerEmails}
+                                onChange={(e) => setCampaignCustomTimerEmails(e.target.value)}
+                            />
+                             <div className="flex flex-col sm:flex-row gap-2">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => handlePaste(setCampaignCustomTimerEmails)}>
+                                    <ClipboardPaste className="mr-2 h-4 w-4" /> Paste
+                                </Button>
+                                <div className="w-full">
+                                  <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderCustomTimerEmailsRef.current?.click()}>
+                                      <Upload className="mr-2 h-4 w-4" /> Upload
+                                  </Button>
+                                  <input type="file" ref={campaignBuilderCustomTimerEmailsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignCustomTimerFileUpload(e, 'emails')} />
+                                  <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported.</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                         <CardHeader>
+                            <CardTitle>2. Subjects</CardTitle>
+                            <CardDescription>Add up to 1000 subject lines to rotate through.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                           <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
+                                {campaignCustomTimerSubjects.map((pair, index) => (
+                                    <div key={pair.id} className="flex items-center gap-2">
+                                        <Input
+                                            id={`subject-custom-timer-${pair.id}`}
+                                            placeholder={`Subject ${index + 1}`}
+                                            value={pair.value}
+                                            onChange={(e) => handleDynamicPairChange(pair.id, e.target.value, setCampaignCustomTimerSubjects)}
+                                        />
+                                        {campaignCustomTimerSubjects.length > 1 && (
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveDynamicPair(pair.id, setCampaignCustomTimerSubjects)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {campaignCustomTimerSubjects.length < 1000 && (
+                                <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignCustomTimerSubjects, campaignCustomTimerSubjects)}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Subject
+                                </Button>
+                            )}
+                             <div className="w-full">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderCustomTimerSubjectsRef.current?.click()}>
+                                  <Upload className="mr-2 h-4 w-4" /> Upload Subjects
+                                </Button>
+                                <input type="file" ref={campaignBuilderCustomTimerSubjectsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignCustomTimerFileUpload(e, 'subjects')} multiple/>
+                                <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported. Each line is a subject.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Column 2: Paragraphs and Custom Timers */}
+                <div className="space-y-6">
+                    <Card>
+                         <CardHeader>
+                            <CardTitle>3. Paragraphs</CardTitle>
+                            <CardDescription>Add paragraphs. Must match the number of subjects.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                           <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
+                                {campaignCustomTimerParagraphs.map((pair, index) => (
+                                    <div key={pair.id} className="flex items-start gap-2">
+                                        <Textarea
+                                            id={`paragraph-custom-timer-${pair.id}`}
+                                            placeholder={`Paragraph ${index + 1}`}
+                                            value={pair.value}
+                                            onChange={(e) => handleDynamicPairChange(pair.id, e.target.value, setCampaignCustomTimerParagraphs)}
+                                            className="min-h-[80px]"
+                                        />
+                                        {campaignCustomTimerParagraphs.length > 1 && (
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveDynamicPair(pair.id, setCampaignCustomTimerParagraphs)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {campaignCustomTimerParagraphs.length < 1000 && (
+                                <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignCustomTimerParagraphs, campaignCustomTimerParagraphs)}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Paragraph
+                                </Button>
+                            )}
+                            <div className="w-full">
+                                <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderCustomTimerParagraphsRef.current?.click()}>
+                                  <Upload className="mr-2 h-4 w-4" /> Upload Paragraphs
+                                </Button>
+                                <input type="file" ref={campaignBuilderCustomTimerParagraphsRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignCustomTimerFileUpload(e, 'paragraphs')} multiple/>
+                                <p className="mt-1 text-center text-xs text-destructive">Only .txt files are supported. Each file is one paragraph.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                         <CardHeader>
+                            <CardTitle>4. Custom Timers</CardTitle>
+                            <CardDescription>Upload a .txt file with timers (one per line). Lines must match the number of paragraphs.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <div className="max-h-80 w-full space-y-3 overflow-y-auto pr-2">
+                                {campaignCustomTimerFile.map((pair, index) => (
+                                    <div key={pair.id} className="flex items-center gap-2">
+                                        <Input
+                                            id={`timer-custom-timer-${pair.id}`}
+                                            placeholder={`Timer ${index + 1} (e.g. 09:00)`}
+                                            value={pair.value}
+                                            onChange={(e) => handleDynamicPairChange(pair.id, e.target.value, setCampaignCustomTimerFile)}
+                                        />
+                                        {campaignCustomTimerFile.length > 1 && (
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveDynamicPair(pair.id, setCampaignCustomTimerFile)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {campaignCustomTimerFile.length < 1000 && (
+                                <Button variant="outline" className="w-full" onClick={() => handleAddDynamicPair(setCampaignCustomTimerFile, campaignCustomTimerFile)}>
+                                    <PlusCircle className="mr-2 h-4 w-4"/> Add Timer
+                                </Button>
+                            )}
+                            <div className="w-full mt-4">
+                              <Button type="button" variant="outline" className="w-full" onClick={() => campaignBuilderCustomTimerFileRef.current?.click()}>
+                                  <Upload className="mr-2 h-4 w-4" /> Upload Timers (.txt)
+                              </Button>
+                              <input type="file" ref={campaignBuilderCustomTimerFileRef} className="hidden" accept=".txt" onChange={(e) => handleCampaignCustomTimerFileUpload(e, 'timers')} />
+                              <p className="mt-1 text-center text-xs text-destructive">Upload a file where each line is a timer.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+            ) : null}
+
+            {campaignCustomTimerHasGenerated ? (
+                 <>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Settings className="h-4 w-4" />
+                            <Label>Copy Action</Label>
+                        </div>
+                        <RadioGroup value={campaignCustomTimerCopyAction} onValueChange={(v: CampaignCopyAction) => setCampaignCustomTimerCopyAction(v)} className="flex gap-4 sm:gap-8 flex-wrap">
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="mark" id="cbct1" />
+                                <Label htmlFor="cbct1" className="cursor-pointer">Mark field as copied</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="remove_field" id="cbct3" />
+                                <Label htmlFor="cbct3" className="cursor-pointer">Remove field on copy</Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
+                    <div className="mt-8">
+                        <Separator className="my-6" />
+                        {campaignCustomTimerOutput.length > 0 ? (
+                            <>
+                                <h3 className="text-lg font-semibold text-center mb-4 text-foreground/80">
+                                    Your Campaign Lines ({campaignCustomTimerOutput.length})
+                                </h3>
+                                <div className="space-y-4">
+                                    {campaignCustomTimerOutput.map((item, index) => (
+                                      editingCampaignCustomTimerItemId === item.id ? (
+                                        // EDITING STATE
+                                        <div key={item.id} className="p-4 border rounded-lg bg-accent/20 space-y-3">
+                                           <div className="flex items-center gap-2">
+                                              <Badge variant="secondary" className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold">{index + 1}</Badge>
+                                              <Input
+                                                value={editingCampaignCustomTimerItemData.email || ''}
+                                                onChange={(e) => setEditingCampaignCustomTimerItemData(d => ({ ...d, email: e.target.value }))}
+                                                className="font-semibold text-lg"
+                                              />
+                                           </div>
+                                           <div className="space-y-2">
+                                            <Label className="text-xs text-muted-foreground pl-1">Subject</Label>
+                                            <Input value={editingCampaignCustomTimerItemData.subject || ''} onChange={(e) => setEditingCampaignCustomTimerItemData(d => ({...d, subject: e.target.value}))} />
+                                            <Label className="text-xs text-muted-foreground pl-1">Paragraph</Label>
+                                            <Textarea value={editingCampaignCustomTimerItemData.paragraph || ''} onChange={(e) => setEditingCampaignCustomTimerItemData(d => ({...d, paragraph: e.target.value}))} className="min-h-[100px]" />
+                                            <Label className="text-xs text-muted-foreground pl-1">Time</Label>
+                                            <Input value={editingCampaignCustomTimerItemData.time || ''} onChange={(e) => setEditingCampaignCustomTimerItemData(d => ({...d, time: e.target.value}))} />
+                                           </div>
+                                           <div className="flex justify-end gap-2">
+                                              <Button variant="ghost" onClick={handleCancelCampaignCustomTimerItemEdit}><X className="mr-2 h-4 w-4"/>Cancel</Button>
+                                              <Button onClick={() => handleSaveCampaignCustomTimerItemEdit(item.id)}><Save className="mr-2 h-4 w-4"/>Save</Button>
+                                           </div>
+                                        </div>
+                                      ) : (
+                                        // DISPLAY STATE
+                                        <div key={item.id} className="p-4 border rounded-lg bg-card/50 space-y-3 relative group">
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                  <Badge variant="secondary" className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold">{index + 1}</Badge>
+                                                  {item.email && <p className="font-semibold text-lg truncate">{item.email}</p>}
+                                              </div>
+                                              <Button size="icon" variant="ghost" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleStartEditCampaignCustomTimerItem(item)}>
+                                                <Pencil className="h-4 w-4"/>
+                                              </Button>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-1 gap-y-3 overflow-x-auto">
+                                              {item.email !== null && (
+                                                <div className="space-y-2 min-w-[250px]">
+                                                  <Label className="text-xs text-muted-foreground pl-1">Email</Label>
+                                                  <CopyableField
+                                                    text={item.email}
+                                                    onCopy={() => handleCampaignCustomTimerFieldCopied(item.id, 'email')}
+                                                    isCopied={item.copiedFields.has('email')}
+                                                  />
+                                                </div>
+                                              )}
+                                              {item.subject !== null && (
+                                                <div className="space-y-2 min-w-[250px]">
+                                                  <Label className="text-xs text-muted-foreground pl-1">Subject</Label>
+                                                  <CopyableField
+                                                    text={item.subject}
+                                                    onCopy={() => handleCampaignCustomTimerFieldCopied(item.id, 'subject')}
+                                                    isCopied={item.copiedFields.has('subject')}
+                                                  />
+                                                </div>
+                                              )}
+                                              {item.paragraph !== null && (
+                                                <div className="space-y-2 min-w-[250px]">
+                                                    <Label className="text-xs text-muted-foreground pl-1">Paragraph</Label>
+                                                    <div onClick={async (e) => {
+                                                          e.stopPropagation();
+                                                          if (campaignCustomTimerCopyAction === 'mark' && item.copiedFields.has('paragraph')) return;
+                                                          try {
+                                                              await navigator.clipboard.writeText(item.paragraph || '');
+                                                              handleCampaignCustomTimerFieldCopied(item.id, 'paragraph');
+                                                          } catch (err) {
+                                                              console.error("Failed to copy: ", err);
+                                                          }
+                                                        }}
+                                                        className={cn(
+                                                          "relative group/p flex items-start p-3 rounded-md border transition-all cursor-pointer bg-card hover:bg-accent/50",
+                                                          item.copiedFields.has('paragraph') && "bg-primary/10 opacity-70 cursor-not-allowed"
+                                                        )}
+                                                      >
+                                                        <p className={cn("flex-grow pr-8 text-sm whitespace-pre-wrap text-card-foreground", item.copiedFields.has('paragraph') && "line-through")}>
+                                                            {item.paragraph}
+                                                        </p>
+                                                        <div className="absolute top-2 right-2 flex items-center opacity-0 group-hover/p:opacity-100 transition-opacity">
+                                                            {item.copiedFields.has('paragraph') ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
+                                                        </div>
+                                                        {item.copiedFields.has('paragraph') && <Check className="absolute top-2 right-2 h-4 w-4 text-primary" />}
+                                                    </div>
+                                                </div>
+                                              )}
+                                              {item.time !== null && (
+                                                <div className="space-y-2 min-w-[250px]">
+                                                  <Label className="text-xs text-muted-foreground pl-1">Time</Label>
+                                                  <CopyableField
+                                                    text={item.time}
+                                                    onCopy={() => handleCampaignCustomTimerFieldCopied(item.id, 'time')}
+                                                    isCopied={item.copiedFields.has('time')}
+                                                  />
+                                                </div>
+                                              )}
+                                            </div>
+                                        </div>
+                                      )
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="text-center text-muted-foreground py-8">
+                                <p>All items have been copied/removed.</p>
+                                <p className="text-sm">You can start over to generate a new list.</p>
+                            </div>
+                        )}
+                    </div>
+                </>
+            ) : null }
+
+            <div className="mt-8 flex flex-col gap-4">
+              {!campaignCustomTimerHasGenerated ? (
+                <Button onClick={handleGenerateCampaignCustomTimer} size="lg">
+                    <MailPlus className="mr-2 h-5 w-5" />
+                    Generate Campaign List
+                </Button>
+              ) : null}
+            </div>
+        </div>
+    )
+    }
 if (activeTool === 'list-sorter') {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -3681,6 +4783,8 @@ if (activeTool === 'duplicate-remover') {
     if (activeTool === "time-interval-generator") return "Time Interval Generator";
     if (activeTool === "line-repeater") return "Line Repeater";
     if (activeTool === "campaign-builder") return "Email Campaign Builder";
+    if (activeTool === "campaign-builder-no-timer") return "Campaign Builder (No Timer)";
+    if (activeTool === "campaign-builder-custom-timer") return "Campaign Builder (Custom Timer)";
     if (activeTool === "list-sorter") return "List Sorter & Randomizer";
     if (activeTool === "case-converter") return "Case Converter";
     if (activeTool === "counter") return "Character & Word Counter";
@@ -3703,6 +4807,8 @@ if (activeTool === 'duplicate-remover') {
     if (activeTool === "time-interval-generator") return "Quickly generate a list of time entries for schedules, logs, or planning.";
     if (activeTool === "line-repeater") return "Repeat a single line of text multiple times to generate a large list.";
     if (activeTool === "campaign-builder") return "Assemble structured data for email campaigns from multiple dynamic inputs.";
+    if (activeTool === "campaign-builder-no-timer") return "Assemble campaign data without time intervals.";
+    if (activeTool === "campaign-builder-custom-timer") return "Assemble campaign data with an uploaded timer list.";
     if (activeTool === "list-sorter") return "Sort, reverse, or shuffle your lists alphabetically or numerically.";
     if (activeTool === "case-converter") return "Quickly convert text between different capitalization formats.";
     if (activeTool === "counter") return "Get real-time counts of words, characters, sentences, and paragraphs.";
@@ -3941,6 +5047,20 @@ if (activeTool === 'duplicate-remover') {
                   title="Email Campaign Builder"
                   description="Assemble campaign data from multiple inputs."
                   onClick={() => setActiveTool("campaign-builder")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<MailPlus className="h-8 w-8 text-primary" />}
+                  title="Campaign Builder (No Timer)"
+                  description="Assemble campaign data without time intervals."
+                  onClick={() => setActiveTool("campaign-builder-no-timer")}
+                  isNew
+                />
+                <ToolCard
+                  icon={<MailPlus className="h-8 w-8 text-primary" />}
+                  title="Campaign Builder (Custom Timer)"
+                  description="Assemble campaign data with an uploaded timer list."
+                  onClick={() => setActiveTool("campaign-builder-custom-timer")}
                   isNew
                 />
                  <ToolCard
